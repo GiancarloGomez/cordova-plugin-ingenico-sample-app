@@ -1,14 +1,62 @@
-<ion-header>
-  <ion-navbar>
-    <ion-title>
-      Ionic Blank
-    </ion-title>
-  </ion-navbar>
-</ion-header>
+<ion-content>
+    <div ion-fixed>
+        <ion-grid>
+            <ion-row>
+                <ion-col col-6>
+                    <button ion-button color="secondary" block (click)="login()" [disabled]="deviceConnected">
+                        CONNECT DEVICE
+                    </button>
+                </ion-col>
+                <ion-col col-6>
+                    <button ion-button color="secondary" block [disabled]="!deviceConnected">
+                        DISCONNECT DEVICE
+                    </button>
+                </ion-col>
+            </ion-row>
+        </ion-grid>
+    </div>
 
-<ion-content padding>
-  The world is your oyster.
-  <p>
-    If you get lost, the <a href="http://ionicframework.com/docs/v2">docs</a> will be your guide.
-  </p>
+    <form id="orderForm" name="orderForm" #orderForm="ngForm">
+
+        <ion-item>
+            <ion-label stacked>PRODUCT</ion-label>
+            <ion-select name="productID" [(ngModel)]="productID" (ngModelChange)="updateValues()">
+                <ion-option *ngFor="let product of productInventory" [value]="product.id">{{product.name}}</ion-option>
+            </ion-select>
+        </ion-item>
+
+        <ion-item>
+            <ion-label stacked>QUANTITY</ion-label>
+            <ion-input type="number" name="quantity" [(ngModel)]="quantity" (ngModelChange)="updateValues()"></ion-input>
+        </ion-item>
+
+        <ion-item>
+            <ion-label stacked>SUBTOTAL</ion-label>
+            <ion-input type="number" name="subtotal" [(ngModel)]="subtotal"></ion-input>
+        </ion-item>
+
+        <ion-item>
+            <ion-label stacked>TAX</ion-label>
+            <ion-input type="number" name="tax" [(ngModel)]="tax"></ion-input>
+        </ion-item>
+
+        <ion-item>
+            <ion-label stacked>TOTAL</ion-label>
+            <ion-input type="number" name="total" [(ngModel)]="total"></ion-input>
+        </ion-item>
+
+        <ion-item>
+            <ion-label stacked>DISCOUNT</ion-label>
+            <ion-input type="number" name="discount" [(ngModel)]="discount"></ion-input>
+        </ion-item>
+
+        <ion-grid>
+            <ion-row>
+                <ion-col><button ion-button full (click)="processCharge('credit')" [disabled]="!deviceConnected || processingCharge">PROCESS CREDIT</button></ion-col>
+                <ion-col><button ion-button full (click)="processCharge('debit')" [disabled]="!deviceConnected || processingCharge">PROCESS DEBIT</button></ion-col>
+                <ion-col><button ion-button full (click)="uploadSignature()" [disabled]="!deviceConnected || processingCharge">UPLOAD SIGNATURE</button></ion-col>
+            </ion-row>
+        </ion-grid>
+    </form>
+
 </ion-content>
