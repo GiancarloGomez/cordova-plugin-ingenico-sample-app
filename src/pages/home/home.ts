@@ -4,7 +4,7 @@ import { IngenicoProvider } from '../../providers/ingenico/ingenico';
 import { Amount, Product, CreditSaleTransactionRequest, DebitSaleTransactionRequest } from '../../providers/providers';
 
 @Component({
-  selector: 'page-home',
+  selector: 'home-page',
   templateUrl: 'home.html'
 })
 

@@ -6,12 +6,14 @@ import { StatusBar } from '@ionic-native/status-bar';
 
 import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
+import { TerminalPage } from '../pages/terminal/terminal';
 import { IngenicoProvider } from '../providers/ingenico/ingenico';
 
 @NgModule({
   declarations: [
     MyApp,
-    HomePage
+    HomePage,
+    TerminalPage
   ],
   imports: [
     BrowserModule,
@@ -20,7 +22,8 @@ import { IngenicoProvider } from '../providers/ingenico/ingenico';
   bootstrap: [IonicApp],
   entryComponents: [
     MyApp,
-    HomePage
+    HomePage,
+    TerminalPage
   ],
   providers: [
     StatusBar,
