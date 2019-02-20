@@ -33,7 +33,7 @@ export class TerminalPage {
         let debug = this.debug,
             logStyle = this.logStyle;
         // do login
-        this.ingenico.login(this.username, this.password)
+        this.ingenico.login(this.username, this.password, "CAT6-64a80ac1-0ff3-4d32-ac92-5558a6870a88", "https://uatmcm.roamdata.com/", "0.1")
             .then(result => {
                 if (this.debug) {console.log(`%cterminal.login()`,this.logStyle,result);}
                 this.connect(function(result){
@@ -43,6 +43,17 @@ export class TerminalPage {
             .catch(error => {
                 this.alert("ERROR: " + error);
             });
+    }
+
+    checkConnection(){
+        this.ingenico.isDeviceConnected().then(result => {
+            let alert = this.alertCtrl.create({
+                title: 'IS DEVICE CONNECTED?',
+                message: 'RESULT: ' + result,
+                buttons: ['Dismiss']
+            });
+            alert.present();
+        });
     }
 
     connect(callback){
@@ -62,7 +73,7 @@ export class TerminalPage {
                 callback(result);
                 this.deviceConnected = true;
                 // why do we run this here?
-                this.onDisconnect();
+                this.checkDeviceDisconnection();
             })
             .catch(error => {
                 loading.dismiss();
@@ -70,7 +81,18 @@ export class TerminalPage {
             });
     }
 
-    onDisconnect(){
+    manualDisconnection(){
+        this.ingenico.disconnect().then(result => {
+            let alert = this.alertCtrl.create({
+                title: "DISCONNECTION",
+                message: "DEVICE DISCONNECTED",
+                buttons: ["Dismiss"]
+            });
+            alert.present();
+        })
+    }
+
+    checkDeviceDisconnection(){
         if (this.debug) {console.log(`%cterminal.onDisconnect()`,this.logStyle);}
         // fires off when device disconnects
         this.ingenico.onDeviceDisconnected()

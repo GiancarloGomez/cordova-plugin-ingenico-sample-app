@@ -20,13 +20,23 @@ import { Device } from './models/com.roam.roamreaderunifiedapi.data/device';
 export class IngenicoProvider {
 
   @Cordova()
-  login(arg0: string, arg1: string): Promise<UserProfile>{
+  login(username: string, password: string, apiKey: string, baseUrl: string, clientVersion: string): Promise<UserProfile>{
     return;
   }
 
   @Cordova()
   connect(): Promise<boolean>{
     return;
+  }
+  
+  @Cordova()
+  disconnect(): Promise<boolean>{
+    return;
+  }  
+
+  @Cordova()
+  isDeviceConnected(): Promise<boolean>{
+    return ;
   }
 
   @Cordova()
@@ -35,7 +45,7 @@ export class IngenicoProvider {
   }
 
   @Cordova()
-  setDeviceType(arg0: any): Promise<boolean>{
+  setDeviceType(deviceType: any): Promise<boolean>{
     return;
   }
 
@@ -50,7 +60,7 @@ export class IngenicoProvider {
   }
 
   @Cordova()
-  selectDevice(arg0: Device): Promise<boolean>{
+  selectDevice(device: Device): Promise<boolean>{
     return;
   }
 
@@ -60,17 +70,17 @@ export class IngenicoProvider {
   }
 
   @Cordova()
-  processCashTransaction(arg0: CashSaleTransactionRequest): Promise<TransactionResponse> {
+  processCashTransaction(cashTransaction: CashSaleTransactionRequest): Promise<TransactionResponse> {
     return;
   }
 
   @Cordova()
-  processCreditSaleTransactionWithCardReader(arg0: CreditSaleTransactionRequest): Promise<TransactionResponse> {
+  processCreditSaleTransactionWithCardReader(creditSaleTransaction: CreditSaleTransactionRequest): Promise<TransactionResponse> {
     return;
   }
 
   @Cordova()
-  processDebitSaleTransactionWithCardReader(arg0: DebitSaleTransactionRequest): Promise<TransactionResponse> {
+  processDebitSaleTransactionWithCardReader(debitSaleTransaction: DebitSaleTransactionRequest): Promise<TransactionResponse> {
     return;
   }
 

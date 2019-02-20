@@ -7,13 +7,15 @@ import { StatusBar } from '@ionic-native/status-bar';
 import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
 import { TerminalPage } from '../pages/terminal/terminal';
+import { ManualPage } from '../pages/manual/manual';
 import { IngenicoProvider } from '../providers/ingenico/ingenico';
 
 @NgModule({
   declarations: [
     MyApp,
     HomePage,
-    TerminalPage
+    TerminalPage,
+    ManualPage
   ],
   imports: [
     BrowserModule,
@@ -23,7 +25,8 @@ import { IngenicoProvider } from '../providers/ingenico/ingenico';
   entryComponents: [
     MyApp,
     HomePage,
-    TerminalPage
+    TerminalPage,
+    ManualPage
   ],
   providers: [
     StatusBar,

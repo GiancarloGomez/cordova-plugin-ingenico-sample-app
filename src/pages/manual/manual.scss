@@ -1,0 +1,37 @@
+page-manual {
+
+}
+
+.login-container {
+    display: block;
+}
+
+.manual-card-entry-container {
+    display: none;
+}
+
+.form-field {
+    width: 100%;
+    height: 30px;
+    background: #FFFFFF;
+    color: #000000;
+    border: none;
+    border-bottom: 1px solid #000000;
+}
+
+#device-list-container {
+    display: none;
+}
+
+.manual-card-entry-container table {
+    width: 100%;
+}
+.manual-card-entry-container table td:nth-child(1) {
+    width: 100%;
+}
+.manual-card-entry-container table td:nth-child(1) div:nth-child(2){
+    margin-right: 10px;
+}
+.manual-card-entry-container table td:nth-child(2) div:nth-child(1){
+    margin-left: 10px;
+}

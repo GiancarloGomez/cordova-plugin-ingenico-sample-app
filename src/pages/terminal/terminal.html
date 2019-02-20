@@ -8,7 +8,7 @@
                     </button>
                 </ion-col>
                 <ion-col *ngIf="deviceConnected"><button ion-button block large (click)="processCharge('credit')" [disabled]="!deviceConnected || processingCharge || total === '' || total === 0 ">PROCESS CREDIT</button></ion-col>
-                <ion-col *ngIf="deviceConnected"><button ion-button block large (click)="processCharge('debit')" [disabled]="!deviceConnected || processingCharge || total === '' || total === 0">PROCESS DEBIT</button></ion-col>
+                <ion-col *ngIf="deviceConnected"><button ion-button block large (click)="processCharge('debit')" [disabled]="!deviceConnected || processingCharge || total === '' || total === 0">PROCESS DEBIT</button></ion-col>                
             </ion-row>
         </ion-grid>
     </ion-navbar>

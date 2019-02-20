@@ -54,7 +54,7 @@ export class HomePage {
     let debug = this.debug,
         logStyle = this.logStyle;
     // do login
-    this.ingenico.login(this.username, this.password)
+    this.ingenico.login(this.username, this.password, "CAT6-64a80ac1-0ff3-4d32-ac92-5558a6870a88", "https://uatmcm.roamdata.com/", "0.1")
       .then(result => {
         if (this.debug) {console.log(`%chome.login()`,this.logStyle,result);}
         this.connect(function(result){
