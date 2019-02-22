@@ -1,7 +1,15 @@
-# New Requests
+# Ingenico Test App
 
-* Add 3 Ingenico values to be passed in as arguments from JavaScript and not as xCode keys
-* New Funciton -> Check for device connection
-* New function -> manually disconnect device
-* Create new page "manual" to demo working without the auto connect feature in case it gives issues in the future as we are both only testing with 1 device in the room
+This application contains 3 sample views
+* __HomePage__<br />
+This page shows the Debit and Credit Transaction options utilizing the auto connect feature
+* __ManualPage__<br />
+This page shows the Debit, Cash and Credit Transaction options utilizing the Device selection feature
+* __TerminalPage__<br />
+This page shows the Debit and Credit Transaction options with a simple interface utilizing the auto connect feature
 
+The page to show is configured within ``app.component.ts``
+
+```javascript
+rootPage : any = HomePage;
+```
