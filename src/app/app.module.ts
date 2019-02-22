@@ -3,12 +3,9 @@ import { ErrorHandler, NgModule } from '@angular/core';
 import { IonicApp, IonicErrorHandler, IonicModule } from 'ionic-angular';
 import { SplashScreen } from '@ionic-native/splash-screen';
 import { StatusBar } from '@ionic-native/status-bar';
-
 import { MyApp } from './app.component';
-import { HomePage } from '../pages/home/home';
-import { TerminalPage } from '../pages/terminal/terminal';
-import { ManualPage } from '../pages/manual/manual';
-import { IngenicoProvider } from '../providers/ingenico/ingenico';
+import { HomePage,ManualPage,TerminalPage } from '../pages/pages';
+import { ConfigService, IngenicoProvider } from '../providers/providers';
 
 @NgModule({
   declarations: [
@@ -29,10 +26,11 @@ import { IngenicoProvider } from '../providers/ingenico/ingenico';
     ManualPage
   ],
   providers: [
-    StatusBar,
+    ConfigService,
+    IngenicoProvider,
     SplashScreen,
-    {provide: ErrorHandler, useClass: IonicErrorHandler},
-    IngenicoProvider
+    StatusBar,
+    {provide: ErrorHandler, useClass: IonicErrorHandler}
   ]
 })
 export class AppModule {}

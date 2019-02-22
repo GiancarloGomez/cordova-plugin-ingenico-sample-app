@@ -2,23 +2,34 @@ import { Component } from '@angular/core';
 import { Platform } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
+import { HomePage, ManualPage, TerminalPage } from '../pages/pages';
+import { ConfigService } from '../providers/providers';
 
-import { HomePage } from '../pages/home/home';
-import { TerminalPage } from '../pages/terminal/terminal';
-import { ManualPage } from '../pages/manual/manual';
 @Component({
-  templateUrl: 'app.html'
+    templateUrl: 'app.html'
 })
-export class MyApp {
-  rootPage:any = ManualPage; //TerminalPage;
 
-  constructor(platform: Platform, statusBar: StatusBar, splashScreen: SplashScreen) {
-    platform.ready().then(() => {
-      // Okay, so the platform is ready and our plugins are available.
-      // Here you can do any higher level native things you might need.
-      statusBar.styleDefault();
-      splashScreen.hide();
-    });
-  }
+export class MyApp {
+
+    logStyle            : string ;
+    debug               : boolean;
+    rootPage            : any = TerminalPage;
+
+    constructor(
+        platform: Platform,
+        statusBar: StatusBar,
+        splashScreen: SplashScreen,
+        public configService: ConfigService
+    ) {
+        this.debug     = this.configService.getDebug();
+        this.logStyle  = this.configService.getLogStyles().app;
+        if (this.debug) {console.log(`%cMyApp.constructor()`,this.logStyle);}
+        // platform ready events
+        platform.ready().then(() => {
+            if (this.debug) {console.log(`%c******* PLATFORM READY FIRED *******`,this.configService.getLogStyles().platformReady);}
+            statusBar.styleDefault();
+            splashScreen.hide();
+        });
+    }
 }
 

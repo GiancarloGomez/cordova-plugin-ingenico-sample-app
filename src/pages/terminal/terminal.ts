@@ -1,108 +1,63 @@
 import { Component } from '@angular/core';
 import { AlertController, LoadingController } from 'ionic-angular';
-import { IngenicoProvider } from '../../providers/ingenico/ingenico';
-import { Amount, CreditSaleTransactionRequest, DebitSaleTransactionRequest } from '../../providers/providers';
+import {
+    Amount,
+    ConfigService,
+    CreditSaleTransactionRequest,
+    DebitSaleTransactionRequest,
+    IngenicoProvider
+} from '../../providers/providers';
 
 @Component({
-  selector: 'terminal-page',
-  templateUrl: 'terminal.html'
+    selector    : 'terminal-page',
+    templateUrl : 'terminal.html'
 })
 
 export class TerminalPage {
 
-    logStyle            : string    = "font-size:14px;font-family:'Operator Mono Ssm Light',Menlo,monospace";
-    debug               : boolean   = true;
-    username            : string    = "logicstudiotest1";
-    password            : string    = "logicstudio";
-    currency            : string    = "USD";
-    total               : number    = 0;
-    deviceConnected     : boolean   = false;
-    processingCharge    : boolean   = false;
+    logStyle         : string ;
+    debug            : boolean;
+    currency         : string    = "USD";
+    total            : number    = 0;
+    deviceConnected  : boolean   = false;
+    processingCharge : boolean   = false;
+    loggedIn         : boolean   = false;
 
     constructor(
+        public alertCtrl: AlertController,
+        public configService: ConfigService,
         public ingenico: IngenicoProvider,
-        public loadingCtrl: LoadingController,
-        public alertCtrl: AlertController
-    ) {
+        public loadingCtrl: LoadingController
+    ){
+        this.debug     = this.configService.getDebug();
+        this.logStyle  = this.configService.getLogStyles().pages;
         if (this.debug) {console.log(`%cterminal.constructor()`,this.logStyle);}
     }
 
     login(){
         if (this.debug) {console.log(`%cterminal.login()`,this.logStyle);}
-        // for callback
-        let debug = this.debug,
-            logStyle = this.logStyle;
         // do login
-        this.ingenico.login(this.username, this.password, "CAT6-64a80ac1-0ff3-4d32-ac92-5558a6870a88", "https://uatmcm.roamdata.com/", "0.1")
-            .then(result => {
-                if (this.debug) {console.log(`%cterminal.login()`,this.logStyle,result);}
-                this.connect(function(result){
-                    if (debug) {console.log(`%cterminal.login()->connect()`,logStyle,result)};
+        if (!this.loggedIn){
+            let ingenicoConfig = this.configService.getIngenicoConfig();
+            // create and present loading notification
+            let loading = this.loadingCtrl.create({
+                content : 'Processing Login ...'
+            });
+            loading.present();
+            this.ingenico.login(ingenicoConfig.username, ingenicoConfig.password, ingenicoConfig.apiKey, ingenicoConfig.baseUrl, ingenicoConfig.clientVersion)
+                .then(result => {
+                    if (this.debug) {console.log(`%cterminal.login()->ingenico.login()`,this.logStyle,result);}
+                    loading.dismiss();
+                    this.loggedIn = true;
+                    this.connectDevice();
+                }).catch(error => {
+                    loading.dismiss();
+                    this.alert(`ERROR : ${error}`);
                 });
-            })
-            .catch(error => {
-                this.alert("ERROR: " + error);
-            });
-    }
-
-    checkConnection(){
-        this.ingenico.isDeviceConnected().then(result => {
-            let alert = this.alertCtrl.create({
-                title: 'IS DEVICE CONNECTED?',
-                message: 'RESULT: ' + result,
-                buttons: ['Dismiss']
-            });
-            alert.present();
-        });
-    }
-
-    connect(callback){
-        if (this.debug) {console.log(`%cterminal.connect()`,this.logStyle);}
-        // create and present loading notification
-        let loading = this.loadingCtrl.create({
-            content     : "CONNECTING",
-            spinner     : "dots"
-        });
-        loading.present();
-        // do connect
-        this.ingenico.connect()
-            .then(result => {
-                if (this.debug) {console.log(`%cterminal.connect()->connect()`,this.logStyle);}
-                loading.dismiss();
-                // run callback - ask why?
-                callback(result);
-                this.deviceConnected = true;
-                // why do we run this here?
-                this.checkDeviceDisconnection();
-            })
-            .catch(error => {
-                loading.dismiss();
-                callback(error);
-            });
-    }
-
-    manualDisconnection(){
-        this.ingenico.disconnect().then(result => {
-            let alert = this.alertCtrl.create({
-                title: "DISCONNECTION",
-                message: "DEVICE DISCONNECTED",
-                buttons: ["Dismiss"]
-            });
-            alert.present();
-        })
-    }
-
-    checkDeviceDisconnection(){
-        if (this.debug) {console.log(`%cterminal.onDisconnect()`,this.logStyle);}
-        // fires off when device disconnects
-        this.ingenico.onDeviceDisconnected()
-            .then(result => {
-                if (this.debug) {console.log(`%cterminal.onDisconnect()->onDeviceDisconnected()`,this.logStyle);}
-                    this.deviceConnected = false;
-            })
-            .catch(error => {
-                this.alert("ERROR: " + error);
-            });
+        }
+        else {
+            this.connectDevice();
+        }
     }
 
     processCharge(type){
@@ -115,24 +70,24 @@ export class TerminalPage {
         if (type === 'credit'){
             this.ingenico.processCreditSaleTransactionWithCardReader( new CreditSaleTransactionRequest(amount, null, null, null, null) )
                 .then(result => {
-                    if (this.debug) {console.log(`%cCreditCardPurchaseResponse`,this.logStyle);}
+                    if (this.debug) {console.log(`%c\tCreditCardPurchaseResponse`,this.logStyle);}
                     this.finalizeCharge(result);
                 })
                 .catch(error => {
                     if (error !== "4945")
-                        this.alert("ERROR: " + error);
+                        this.alert(`ERROR : ${error}`);
                     this.processingCharge = false;
                 });
         }
         else{
             this.ingenico.processDebitSaleTransactionWithCardReader( new DebitSaleTransactionRequest(amount, null, null, null, null) )
                 .then(result => {
-                    if (this.debug) {console.log(`%cDebitPurchaseResponse`,this.logStyle);}
+                    if (this.debug) {console.log(`%c\tDebitPurchaseResponse`,this.logStyle);}
                     this.finalizeCharge(result);
                 })
                 .catch(error => {
                     if (error !== "4945")
-                        this.alert("ERROR: " + error);
+                        this.alert(`ERROR : ${error}`);
                     this.processingCharge = false;
                 });
         }
@@ -157,5 +112,66 @@ export class TerminalPage {
             message: message,
             buttons: ['OK']
         }).present();
+    }
+
+    /* ==========================================================================
+    DEVICE MANAGEMENT
+    ========================================================================== */
+
+    connectDevice(callback){
+        if (this.debug) {console.log(`%cterminal.connect()`,this.logStyle);}
+        // create and present loading notification
+        let loading = this.loadingCtrl.create({
+            content     : "Searching for and Connecting device",
+            spinner     : "dots"
+        });
+        loading.present();
+        // do connect
+        this.ingenico.connect()
+            .then(result => {
+                if (this.debug) {console.log(`%cterminal.connect()->ingenico.connect() = ${result}`,this.logStyle);}
+                loading.dismiss();
+                this.deviceConnected = true;
+                // why do we run this here?
+                this.onDeviceDisconnect();
+            })
+            .catch(error => {
+                loading.dismiss();
+                callback(error);
+            });
+    }
+
+    disconnectDevice(){
+        this.ingenico.disconnect()
+            .then(result => {
+                if (this.debug) {console.log(`%cterminal.disconnect()->ingenico.disconnect() = ${result}`,this.logStyle);}
+            })
+            .catch(error => {
+                this.alert(`ERROR : ${error}`);
+            });
+    }
+
+    onDeviceDisconnect(){
+        if (this.debug) {console.log(`%cterminal.onDeviceDisconnect()`,this.logStyle);}
+        // fires off when device disconnects
+        this.ingenico.onDeviceDisconnected()
+            .then(result => {
+                if (this.debug) {console.log(`%cterminal.onDeviceDisconnect()->onDeviceDisconnected()`,this.logStyle);}
+                    this.deviceConnected = false;
+            })
+            .catch(error => {
+                this.alert(`ERROR : ${error}`);
+            });
+    }
+
+    isDeviceConnected(){
+        if (this.debug) {console.log(`%cterminal.isDeviceConnected()`,this.logStyle);}
+        this.ingenico.isDeviceConnected()
+            .then(result=> {
+                if (this.debug) {console.log(`%cterminal.isDeviceConnected()->ingenico.isDeviceConnected() = ${result}`,this.logStyle);}
+            })
+            .catch(error => {
+                this.alert(`ERROR : ${error}`);
+            });
     }
 }

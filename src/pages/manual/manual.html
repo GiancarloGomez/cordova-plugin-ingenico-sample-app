@@ -1,83 +1,53 @@
-<ion-content padding>
-  <div class="login-container">
-      <ion-item>
-          <ion-label color="primary" floating>Username</ion-label>
-          <ion-input [(ngModel)]="username"></ion-input>
-      </ion-item>  
-      <ion-item>
-        <ion-label color="primary" floating>Password</ion-label>
-        <ion-input type="password" [(ngModel)]="password"></ion-input>
-      </ion-item>
-      <button ion-button full (click)="login()">Sign In</button>
+<ion-content>
 
-      <div id="device-list-container">
-        <ion-list>
+    <div *ngIf="!deviceConnected" id="welcome">
+        <button ion-button large (click)="login()">LOOKUP DEVICES</button>
+    </div>
 
-            <ion-list-header>
-              Dispositivos disponibles
-            </ion-list-header>
-          
-            <ion-item *ngFor="let item of devices; let i = index" (click)="deviceSelected(item)">
-                {{ item.name }}
-            </ion-item>
-        </ion-list> 
-      </div>
-  </div>
+    <form id="orderForm" name="orderForm" #orderForm="ngForm" *ngIf="deviceConnected">
 
-  <div class="manual-card-entry-container">
-    <div><ion-label color="primary">Currency</ion-label></div>
-    <div>
-      <select class="form-field" [(ngModel)]="currency">
-        <option value="USD">USD</option>
-      </select>
-    </div>
-    <div>
-      <table>
-        <tr>
-          <td>
-            <div><ion-label color="primary">Product</ion-label></div>
-            <div>
-                <select class="form-field" [(ngModel)]="prod" (change)="updateValues()">
-                    <option value="0">Product #1</option>
-                    <option value="1">Product #2</option>
-                    <option value="2">Product #3</option>
-                </select>
-            </div>
-          </td>
-          <td>
-              <div><ion-label color="primary">Quantity</ion-label></div>
-              <div>
-                  <input type="number" class="form-field" [(ngModel)]="quantity" (keydown)="updateValues()" readonly/>
-              </div>
-          </td>
-        </tr>
-      </table>
-    </div>
-    <div>
-        <div><ion-label color="primary">Subtotal</ion-label></div>
-        <div>
-            <input type="number" class="form-field" [(ngModel)]="subtotal" readonly/>
-        </div>
-    </div>
-    <div>
-        <div><ion-label color="primary">Tax</ion-label></div>
-        <div>
-            <input type="number" class="form-field" [(ngModel)]="tax" readonly/>
-        </div>
-    </div>
-    <div>
-        <div><ion-label color="primary">Total</ion-label></div>
-        <div>
-            <input type="number" class="form-field" [(ngModel)]="total" readonly/>
-        </div>
-    </div>
-    <div>
-        <div><ion-label color="primary">Discount</ion-label></div>
-        <div>
-            <input type="number" class="form-field" [(ngModel)]="discount"/>
-        </div>
-    </div>
-    <button ion-button full (click)="processCash()" color="primary">PROCESS CASH</button>
-    <button ion-button full (click)="processCredit()" color="primary">PROCESS CREDIT</button>
-  </div>
+        <ion-item>
+            <ion-label stacked>PRODUCT</ion-label>
+            <ion-select name="productID" [(ngModel)]="productID" (ngModelChange)="updateValues()">
+                <ion-option *ngFor="let product of productInventory" [value]="product.id">{{product.name}}</ion-option>
+            </ion-select>
+        </ion-item>
+
+        <ion-item>
+            <ion-label stacked>QUANTITY</ion-label>
+            <ion-input type="number" name="quantity" [(ngModel)]="quantity" (ngModelChange)="updateValues()"></ion-input>
+        </ion-item>
+
+        <ion-item>
+            <ion-label stacked>SUBTOTAL</ion-label>
+            <ion-input type="number" name="subtotal" [(ngModel)]="subtotal"></ion-input>
+        </ion-item>
+
+        <ion-item>
+            <ion-label stacked>TAX</ion-label>
+            <ion-input type="number" name="tax" [(ngModel)]="tax"></ion-input>
+        </ion-item>
+
+        <ion-item>
+            <ion-label stacked>TOTAL</ion-label>
+            <ion-input type="number" name="total" [(ngModel)]="total"></ion-input>
+        </ion-item>
+
+        <ion-item>
+            <ion-label stacked>DISCOUNT</ion-label>
+            <ion-input type="number" name="discount" [(ngModel)]="discount"></ion-input>
+        </ion-item>
+
+        <ion-grid>
+            <ion-row>
+                <ion-col><button ion-button block (click)="processCharge('cash')" [disabled]="processingCharge">PROCESS CASH</button></ion-col>
+                <ion-col><button ion-button block (click)="processCharge('credit')" [disabled]="processingCharge">PROCESS CREDIT</button></ion-col>
+                <ion-col><button ion-button block (click)="processCharge('debit')" [disabled]="processingCharge">PROCESS DEBIT</button></ion-col>
+            </ion-row>
+            <ion-row>
+                <ion-col><button ion-button block color="secondary" (click)="isDeviceConnected()" [disabled]="processingCharge">CHECK CONNECTION</button></ion-col>
+                <ion-col><button ion-button block color="secondary" (click)="disconnectDevice()" [disabled]="processingCharge">DISCONNECT DEVICE</button></ion-col>
+            </ion-row>
+        </ion-grid>
+    </form>
 </ion-content>

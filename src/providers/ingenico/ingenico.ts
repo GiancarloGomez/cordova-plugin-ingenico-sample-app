@@ -9,10 +9,10 @@ import { TransactionResponse } from './models/com.ingenico.mpos.sdk.response/tra
 import { Device } from './models/com.roam.roamreaderunifiedapi.data/device';
 
 @Plugin({
-  pluginName: "ingenicoionic", 
+  pluginName: "ingenicoionic",
   plugin: "cordova-plugin-ionic-ingenico",
   pluginRef: "IngenicoIonic",
-  platforms: ['Android', 'iOS']
+  platforms: ['iOS']
 })
 
 
@@ -28,11 +28,11 @@ export class IngenicoProvider {
   connect(): Promise<boolean>{
     return;
   }
-  
+
   @Cordova()
   disconnect(): Promise<boolean>{
     return;
-  }  
+  }
 
   @Cordova()
   isDeviceConnected(): Promise<boolean>{

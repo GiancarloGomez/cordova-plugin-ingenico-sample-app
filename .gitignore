@@ -30,6 +30,10 @@ plugins/ios.json
 www/
 $RECYCLE.BIN/
 
+# Settings
+src/assets/javascript/environment.js
+cordova-build.json
+
 .DS_Store
 Thumbs.db
 UserInterfaceState.xcuserstate

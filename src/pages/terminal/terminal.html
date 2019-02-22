@@ -2,18 +2,16 @@
     <ion-navbar>
         <ion-grid>
             <ion-row>
-                <ion-col *ngIf="!deviceConnected">
-                    <button ion-button block large (click)="login()" [disabled]="deviceConnected">
-                        CONNECT DEVICE
-                    </button>
-                </ion-col>
-                <ion-col *ngIf="deviceConnected"><button ion-button block large (click)="processCharge('credit')" [disabled]="!deviceConnected || processingCharge || total === '' || total === 0 ">PROCESS CREDIT</button></ion-col>
-                <ion-col *ngIf="deviceConnected"><button ion-button block large (click)="processCharge('debit')" [disabled]="!deviceConnected || processingCharge || total === '' || total === 0">PROCESS DEBIT</button></ion-col>                
+                <ion-col *ngIf="!deviceConnected"><button ion-button block large (click)="login()" [disabled]="deviceConnected">CONNECT</button></ion-col>
+                <ion-col *ngIf="deviceConnected"><button ion-button block large (click)="processCharge('credit')" [disabled]="processingCharge || total === '' || total === 0 ">CREDIT</button></ion-col>
+                <ion-col *ngIf="deviceConnected"><button ion-button block large (click)="processCharge('debit')" [disabled]="processingCharge || total === '' || total === 0">DEBIT</button></ion-col>
+                <ion-col *ngIf="deviceConnected"><button ion-button block large color="secondary" (click)="isDeviceConnected()" [disabled]="processingCharge">CHECK CONNECTION</button></ion-col>
+                <ion-col *ngIf="deviceConnected"><button ion-button block large color="secondary" (click)="disconnectDevice()" [disabled]="processingCharge">DISCONNECT</button></ion-col>
             </ion-row>
         </ion-grid>
     </ion-navbar>
 </ion-header>
 
 <ion-content padding>
-    <ion-input type="number" name="total" [(ngModel)]="total" class="large-input" [disabled]="!deviceConnected"></ion-input>
+    <ion-input type="number" name="total" [(ngModel)]="total" class="large-input" *ngIf="deviceConnected"></ion-input>
 </ion-content>

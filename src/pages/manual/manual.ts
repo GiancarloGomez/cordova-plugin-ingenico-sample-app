@@ -1,176 +1,293 @@
-import { Component, ElementRef } from '@angular/core';
-import { ActionSheetController, LoadingController } from 'ionic-angular';
+import { Component, ViewChild } from '@angular/core';
+import { ActionSheetController, AlertController, LoadingController } from 'ionic-angular';
+import {
+    Amount,
+    CashSaleTransactionRequest,
+    ConfigService,
+    CreditSaleTransactionRequest,
+    DebitSaleTransactionRequest,
+    Device,
+    DeviceType,
+    IngenicoProvider,
+    Product
+} from '../../providers/providers';
 
-import { IngenicoProvider } from '../../providers/ingenico/ingenico';
-import { Amount } from '../../providers/ingenico/models/com.ingenico.mpos.sdk.data/amount';
-import { Product } from '../../providers/ingenico/models/com.ingenico.mpos.sdk.data/product';
-import { CashSaleTransactionRequest } from '../../providers/ingenico/models/com.ingenico.mpos.sdk.request/cash-sale-transaction-request';
-import { Device } from '../../providers/ingenico/models/com.roam.roamreaderunifiedapi.data/device';
-import { DeviceType } from '../../providers/ingenico/models/com.roam.roamreaderunifiedapi.constants/device-type';
 
 @Component({
-  selector: 'page-manual',
-  templateUrl: 'manual.html'
+    selector    : 'manual-page',
+    templateUrl : 'manual.html'
 })
+
 export class ManualPage {
-  username: string;
-  password: string;
 
-  message: string;
+    @ViewChild('orderForm') form;
 
-  request: CashSaleTransactionRequest;
+    logStyle         : string ;
+    debug            : boolean;
+    request          : any;
+    devices          : Device[];
+    currency         : string    = "USD";
+    quantity         : string    = "1";
+    subtotal         : any       = 0;
+    tax              : any       = 0;
+    total            : any       = 0;
+    discount         : any       = 0;
+    productID        : number    = 0;
+    productVal       : any       = 0;
+    productName      : string    = "";
+    taxValue         : any       = 0.07;
+    deviceConnected  : boolean   = false;
+    processingCharge : boolean   = false;
+    loggedIn         : boolean   = false;
+    productInventory : Array<any> = [
+        {id:0,name:"PRODUCT #1",price:1.00},
+        {id:1,name:"PRODUCT #2",price:1.50},
+        {id:2,name:"PRODUCT #3",price:2.00}
+    ];
 
-  currency: string = "USD";
-  prod: string = "0";
-  quantity: string = "1";
-  subtotal: number;
-  tax: number;
-  total: number;
-  discount: number = 0;
-
-  devices: Device[];
-
-  productVal = 0;
-  productName = "";
-  taxValue = 0.07;
-  constructor(public ingenico: IngenicoProvider, public actionSheetCtrl: ActionSheetController, public loadingCtrl: LoadingController, private elRef: ElementRef) {
-    this.username = "logicstudiotest1";
-    this.password = "logicstudio";
-
-    this.updateValues();
-  }
-
-  setDeviceType(){
-    this.ingenico.setDeviceType(DeviceType.RP750x).then(result => {
-      this.ingenico.searchForDevice().then(result => {
-        this.devices = result;
-        this.elRef.nativeElement.querySelector('#device-list-container').style.display = "block";
-      }).catch(error => {
-        alert(error);
-      });
-    }).catch(error => {
-      alert(error);
-    });
-  }
-
-  login(){
-    this.ingenico.login(this.username, this.password, "CAT6-64a80ac1-0ff3-4d32-ac92-5558a6870a88", "https://uatmcm.roamdata.com/", "0.1").then(result => {
-        this.setDeviceType();
-    }).catch(error => {
-      alert("ERROR: " + error);
-    });
-  }
-
-  processCash() {
-    var amount = new Amount("USD", this.total, this.subtotal, this.tax, this.discount, "", 0);
-    var products = new Array<Product>();
-
-    var product = new Product(this.productName, this.productVal, this.productName, "", parseInt(this.quantity));
-    products.push(product);
-
-    this.request = new CashSaleTransactionRequest(amount, products, null, null, null);
-    console.log(JSON.stringify(this.request));
-
-    this.ingenico.processCashTransaction(this.request).then(result => {
-      alert(result.transactionResponseCode);
-    }).catch(error => {
-      alert("ERROR: " + error);
-    });
-  }
-
-  processCredit() {
-    var amount = new Amount("USD", this.total, this.subtotal, this.tax, this.discount, "", 0);
-    var products = new Array<Product>();
-
-    var product = new Product(this.productName, this.productVal, this.productName, "", parseInt(this.quantity));
-    products.push(product);
-
-    this.request = new CashSaleTransactionRequest(amount, products, "", "", null);
-    console.log(JSON.stringify(this.request));
-
-    this.ingenico.processCreditSaleTransactionWithCardReader(this.request).then(result => {
-      alert(result.transactionResponseCode);
-    }).catch(error => {
-      alert("ERROR: " + error);
-    });
-  }
-
-  updateValues() {
-    switch(this.prod){
-      case "0": 
-        this.productVal = 300;
-        this.productName = "Product #1";
-        break;
-      case "1": 
-        this.productVal = 450;
-        this.productName = "Product #2";    
-        break;
-      case "2": 
-        this.productVal = 600;
-        this.productName = "Product #3";      
-        break;
+    constructor(
+        public alertCtrl: AlertController,
+        public actionSheetCtrl: ActionSheetController,
+        public configService: ConfigService,
+        public ingenico: IngenicoProvider,
+        public loadingCtrl: LoadingController
+    ){
+        this.debug     = this.configService.getDebug();
+        this.logStyle  = this.configService.getLogStyles().pages;
+        if (this.debug) {console.log(`%cmanual.constructor()`,this.logStyle);}
+        this.updateValues();
     }
 
-    var quantity = parseInt(this.quantity);
-    this.subtotal = (this.productVal * quantity);
-    this.tax = this.productVal * this.taxValue * quantity;
-    this.total = this.productVal * ( this.taxValue + 1 ) * quantity;
-
-    this.subtotal = parseInt(this.subtotal + "");
-    this.tax = parseInt(this.tax + "");
-    this.total = parseInt(this.total + "");
-  }
-
-  showDevices(devices: Device[]) {
-    var buttons = [];
-
-    for(var c = 0; c < devices.length; c++){
-      var device = devices[c];
-      var obj = {
-        text: devices[c].name,
-        handler: () => {   
-          this.deviceSelected(device);
+    login(){
+        if (this.debug) {console.log(`%cmanual.login()`,this.logStyle);}
+        if (!this.loggedIn){
+            let ingenicoConfig = this.configService.getIngenicoConfig();
+            // create and present loading notification
+            let loading = this.loadingCtrl.create({
+                content : 'Processing Login ...'
+            });
+            loading.present();
+            this.ingenico.login(ingenicoConfig.username, ingenicoConfig.password, ingenicoConfig.apiKey, ingenicoConfig.baseUrl, ingenicoConfig.clientVersion)
+                .then(result => {
+                    if (this.debug) {console.log(`%cmanual.login()->ingenico.login()`,this.logStyle,result);}
+                    loading.dismiss();
+                    this.loggedIn = true;
+                    this.setDeviceTypeAndSearch();
+                })
+                .catch(error => {
+                    loading.dismiss();
+                    this.alert(`ERROR : ${error}`);
+                });
         }
-      }
-      buttons.push(obj);
+        else {
+            this.setDeviceTypeAndSearch();
+        }
     }
-    const actionSheet = this.actionSheetCtrl.create({
-      title: 'Seleccione el dispositivo de pago.',
-      buttons: buttons
-    });
-    actionSheet.present(); 
-  }
 
-  deviceSelected(device: Device){
-    this.ingenico.selectDevice(device).then(result => {
-      if (result){
+    processCharge(type) {
+        if (this.debug) {console.log(`%cmanual.processCharge(${type})`,this.logStyle);}
+        let quantity   = parseInt(this.quantity),
+            product    = this.productInventory[this.productID],
+            amount     = new Amount(this.currency, this.total*100, this.subtotal*100, this.tax*100, this.discount*100, "", 0),
+            products   = new Array<Product>(
+                new Product(product.name,product.price, product.name, "", quantity)
+            );
+
+        this.processingCharge = true;
+
+        if (type === 'cash') {
+            this.request = new CashSaleTransactionRequest(amount, products, "", "", null);
+            this.ingenico.processCashTransaction(this.request)
+                .then(result => {
+                    if (this.debug) {console.log(`%c\tCashPurchaseResponse`,this.logStyle,result);}
+                    this.alert(result.transactionResponseCode === 1 ? 'Cash Purchase Complete' : 'Cash Purchase Failed');
+                    this.processingCharge = false;
+                }).catch(error => {
+                    if (error !== "4945")
+                        this.alert("ERROR: " + error);
+                    this.processingCharge = false;
+                });
+        }
+        else if (type === 'credit') {
+            this.request = new CreditSaleTransactionRequest(amount, products, "", "", null);
+            this.ingenico.processCreditSaleTransactionWithCardReader(this.request)
+                .then(result => {
+                    if (this.debug) {console.log(`%c\tCreditCardPurchaseResponse`,this.logStyle,result);}
+                    this.alert(result.transactionResponseCode === 1 ? 'Credit Purchase Complete' : 'Credit Purchase Failed');
+                    this.processingCharge = false;
+                }).catch(error => {
+                    if (error !== "4945")
+                        this.alert("ERROR: " + error);
+                    this.processingCharge = false;
+                });
+        }
+        else {
+            this.request = new DebitSaleTransactionRequest(amount, products, "", "", null);
+            this.ingenico.processDebitSaleTransactionWithCardReader(this.request)
+                .then(result => {
+                    if (this.debug) {console.log(`%c\tDebitPurchaseResponse`,this.logStyle,result);}
+                    this.alert(result.transactionResponseCode === 1 ? 'Debit Purchase Complete' : 'Debit Purchase Failed');
+                    this.processingCharge = false;
+                }).catch(error => {
+                    if (error !== "4945")
+                        this.alert("ERROR: " + error);
+                    this.processingCharge = false;
+                });
+        }
+    }
+
+    updateValues() {
+        if (this.debug) {console.log(`%cmanual.updateValues()`,this.logStyle);}
+
+        let quantity = parseInt(this.quantity),
+            product  = this.productInventory[this.productID];
+
+        this.subtotal = (product.price * quantity).toFixed(2);
+        this.tax      = (product.price * this.taxValue * quantity).toFixed(2);
+        this.total    = (product.price * ( this.taxValue + 1 ) * quantity).toFixed(2);
+    }
+
+    alert(message){
+        if (this.debug) {console.log(`%cmanual.alert`,this.logStyle,message);}
+        // show alert
+        this.alertCtrl.create({
+            message: message,
+            buttons: ['OK']
+        }).present();
+    }
+
+    /* ==========================================================================
+    DEVICE MANAGEMENT
+    ========================================================================== */
+
+    setDeviceTypeAndSearch(){
+        if (this.debug) {console.log(`%cmanual.setDeviceTypeAndSearch()`,this.logStyle);}
+        // create and present loading notification
         let loading = this.loadingCtrl.create({
-          content: 'Configurando el dispositivo...'
+            content : 'Looking for devices ...'
         });
-    
         loading.present();
+        this.ingenico.setDeviceType(DeviceType.RP750x)
+            .then(result => {
+                if (this.debug) {console.log(`%cmanual.setDeviceTypeAndSearch()->ingenico.setDeviceType() = ${result}`,this.logStyle);}
+                this.ingenico.searchForDevice()
+                    .then(result => {
+                        if (this.debug) {console.log(`%cmanual.setDeviceTypeAndSearch()->ingenico.searchForDevice()`,this.logStyle,result);}
+                        loading.dismiss();
+                        this.devices = result;
+                        this.showAvailableDevices();
+                    })
+                    .catch(error => {
+                        loading.dismiss();
+                        this.alert(`ERROR : ${error}`);
+                    });
+            })
+            .catch(error => {
+                this.alert(`ERROR : ${error}`);
+            });
+    }
 
-        this.ingenico.setupDevice().then(result => {
-          if (result){          
-            loading.dismiss();
-            var loginContainer = this.elRef.nativeElement.querySelector('.login-container');
-            var manualCardEntryContainer = this.elRef.nativeElement.querySelector('.manual-card-entry-container');
-      
-            loginContainer.style.display = "none";
-            manualCardEntryContainer.style.display = "block";
-          } else {
-            loading.dismiss();
-            alert("No se pudo configurar el dispositivo.");
-          }
-        }).catch(error => {
-          loading.dismiss();
-          alert("SETUP ERROR: " + error);
-        });               
-      } else {
-        alert("No se pudo seleccionar el dispositivo.");
-      }    
-    }).catch(error => {
-      alert("SELECT ERROR: " + error);
-    });
-  }
+    showAvailableDevices(){
+        if (this.debug) {console.log(`%cmanual.showAvailableDevices()`,this.logStyle);}
+
+        let buttons = [],
+            device,
+            obj,
+            i;
+
+        if (this.devices.length){
+            for(i = 0; i < this.devices.length; i++){
+                device  = this.devices[i];
+                obj     = {
+                    text: this.devices[i].name,
+                    handler: () => {
+                      this.selectDevice(device);
+                    }
+                };
+                buttons.push(obj);
+            }
+
+            this.actionSheetCtrl.create({
+                title   : 'SELECT DEVICE',
+                buttons : buttons
+            }).present();
+        }
+        else {
+            this.alert(`No devices where found`);
+        }
+    }
+
+    selectDevice(device: Device){
+        if (this.debug) {console.log(`%cmanual.selectDevice()`,this.logStyle);}
+        // create and present loading notification
+        let loading = this.loadingCtrl.create({
+            content: 'Configuring device ...'
+        });
+        loading.present();
+        this.ingenico.selectDevice(device)
+            .then(result => {
+                if (result){
+                    if (this.debug) {console.log(`%cmanual.selectDevice()->ingenico.selectDevice() = ${result}`,this.logStyle);}
+                    this.ingenico.setupDevice()
+                        .then(result => {
+                            if (this.debug) {console.log(`%cmanual.selectDevice()->ingenico.setupDevice() = ${result}`,this.logStyle);}
+                            loading.dismiss();
+                            if (result){
+                                this.deviceConnected = true;
+                                this.onDeviceDisconnect();
+                            }
+                            else {
+                                this.alert("Device could not be configured");
+                            }
+                        })
+                        .catch(error => {
+                            loading.dismiss();
+                            this.alert(`ERROR : ${error}`);
+                        });
+                }
+                else {
+                    loading.dismiss();
+                    this.alert("Device could not be selected.");
+                }
+            })
+            .catch(error => {
+                loading.dismiss();
+                this.alert(`ERROR : ${error}`);
+            });
+    }
+
+    disconnectDevice(){
+        if (this.debug) {console.log(`%cmanual.disconnectDevice()`,this.logStyle);}
+        this.ingenico.disconnect()
+            .then(result => {
+                if (this.debug) {console.log(`%cmanual.disconnectDevice()->ingenico.disconnect() = ${result}`,this.logStyle);}
+            })
+            .catch(error => {
+                this.alert(`ERROR : ${error}`);
+            });
+    }
+
+    onDeviceDisconnect(){
+        if (this.debug) {console.log(`%cmanual.onDeviceDisconnect()`,this.logStyle);}
+        // fires off when device disconnects
+        this.ingenico.onDeviceDisconnected()
+            .then(result => {
+                if (this.debug) {console.log(`%cmanual.onDeviceDisconnect()->ingenico.onDeviceDisconnected() = ${result}`,this.logStyle);}
+                this.deviceConnected = false;
+            })
+            .catch(error => {
+                this.alert(`ERROR : ${error}`);
+            });
+    }
+
+    isDeviceConnected(){
+        if (this.debug) {console.log(`%cmanual.isDeviceConnected()`,this.logStyle);}
+        this.ingenico.isDeviceConnected()
+            .then(result=> {
+                if (this.debug) {console.log(`%cmanual.isDeviceConnected()->ingenico.isDeviceConnected() = ${result}`,this.logStyle);}
+            })
+            .catch(error => {
+                this.alert(`ERROR : ${error}`);
+            });
+    }
 }
