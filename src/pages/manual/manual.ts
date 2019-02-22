@@ -1,16 +1,16 @@
 import { Component, ViewChild } from '@angular/core';
 import { ActionSheetController, AlertController, LoadingController } from 'ionic-angular';
+import { ConfigService } from '../../providers/config.service';
 import {
     Amount,
     CashSaleTransactionRequest,
-    ConfigService,
     CreditSaleTransactionRequest,
     DebitSaleTransactionRequest,
     Device,
     DeviceType,
     IngenicoProvider,
     Product
-} from '../../providers/providers';
+} from '../../../plugins/cordova-plugin-ionic-ingenico/core/providers';
 
 
 @Component({

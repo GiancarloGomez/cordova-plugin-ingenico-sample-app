@@ -3,7 +3,7 @@ import { Platform } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 import { HomePage, ManualPage, TerminalPage } from '../pages/pages';
-import { ConfigService } from '../providers/providers';
+import { ConfigService } from '../providers/config.service';
 
 @Component({
     templateUrl: 'app.html'
@@ -13,7 +13,7 @@ export class MyApp {
 
     logStyle            : string ;
     debug               : boolean;
-    rootPage            : any = TerminalPage;
+    rootPage            : any = ManualPage;
 
     constructor(
         platform: Platform,

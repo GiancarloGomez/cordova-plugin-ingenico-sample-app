@@ -1,13 +1,13 @@
 import { Component, ViewChild } from '@angular/core';
 import { AlertController, LoadingController } from 'ionic-angular';
+import { ConfigService } from '../../providers/config.service';
 import {
     Amount,
-    ConfigService,
     CreditSaleTransactionRequest,
     DebitSaleTransactionRequest,
     IngenicoProvider,
     Product
-} from '../../providers/providers';
+} from '../../../plugins/cordova-plugin-ionic-ingenico/core/providers';
 
 @Component({
     selector    : 'home-page',
@@ -185,9 +185,10 @@ export class HomePage {
     }
 
     disconnectDevice(){
+        if (this.debug) {console.log(`%chome.disconnectDevice()`,this.logStyle);}
         this.ingenico.disconnect()
             .then(result => {
-                if (this.debug) {console.log(`%chome.disconnect()->ingenico.disconnect() = ${result}`,this.logStyle);}
+                if (this.debug) {console.log(`%chome.disconnectDevice()->ingenico.disconnect() = ${result}`,this.logStyle);}
             })
             .catch(error => {
                 this.alert(`ERROR : ${error}`);

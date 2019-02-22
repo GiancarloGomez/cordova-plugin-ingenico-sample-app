@@ -5,7 +5,8 @@ import { SplashScreen } from '@ionic-native/splash-screen';
 import { StatusBar } from '@ionic-native/status-bar';
 import { MyApp } from './app.component';
 import { HomePage,ManualPage,TerminalPage } from '../pages/pages';
-import { ConfigService, IngenicoProvider } from '../providers/providers';
+import { ConfigService } from '../providers/config.service';
+import { IngenicoProvider } from '../../plugins/cordova-plugin-ionic-ingenico/core/providers';
 
 @NgModule({
   declarations: [

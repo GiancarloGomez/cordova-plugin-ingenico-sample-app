@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
 import { AlertController, LoadingController } from 'ionic-angular';
+import { ConfigService } from '../../providers/config.service';
 import {
     Amount,
-    ConfigService,
     CreditSaleTransactionRequest,
     DebitSaleTransactionRequest,
     IngenicoProvider
-} from '../../providers/providers';
+} from '../../../plugins/cordova-plugin-ionic-ingenico/core/providers';
 
 @Component({
     selector    : 'terminal-page',
@@ -118,33 +118,33 @@ export class TerminalPage {
     DEVICE MANAGEMENT
     ========================================================================== */
 
-    connectDevice(callback){
-        if (this.debug) {console.log(`%cterminal.connect()`,this.logStyle);}
+    connectDevice(){
+        if (this.debug) {console.log(`%cterminal.connectDevice()`,this.logStyle);}
         // create and present loading notification
         let loading = this.loadingCtrl.create({
             content     : "Searching for and Connecting device",
             spinner     : "dots"
         });
         loading.present();
+
         // do connect
         this.ingenico.connect()
             .then(result => {
-                if (this.debug) {console.log(`%cterminal.connect()->ingenico.connect() = ${result}`,this.logStyle);}
+                if (this.debug) {console.log(`%cterminal.connectDevice()->ingenico.connect() = ${result}`,this.logStyle);}
                 loading.dismiss();
                 this.deviceConnected = true;
-                // why do we run this here?
                 this.onDeviceDisconnect();
             })
             .catch(error => {
                 loading.dismiss();
-                callback(error);
             });
     }
 
     disconnectDevice(){
+        if (this.debug) {console.log(`%cterminal.disconnectDevice()`,this.logStyle);}
         this.ingenico.disconnect()
             .then(result => {
-                if (this.debug) {console.log(`%cterminal.disconnect()->ingenico.disconnect() = ${result}`,this.logStyle);}
+                if (this.debug) {console.log(`%cterminal.disconnectDevice()->ingenico.disconnect() = ${result}`,this.logStyle);}
             })
             .catch(error => {
                 this.alert(`ERROR : ${error}`);
