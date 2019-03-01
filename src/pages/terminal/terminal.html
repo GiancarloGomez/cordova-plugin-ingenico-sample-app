@@ -1,4 +1,7 @@
 <ion-header>
+    <ion-toolbar>
+        <ion-title>TERMINAL DEMO</ion-title>
+    </ion-toolbar>
     <ion-navbar>
         <ion-grid>
             <ion-row>
@@ -13,5 +16,15 @@
 </ion-header>
 
 <ion-content padding>
-    <ion-input type="number" name="total" [(ngModel)]="total" class="large-input" *ngIf="deviceConnected"></ion-input>
+    <ion-input type="number" name="total" [(ngModel)]="total" class="large-input" [disabled]="!deviceConnected"></ion-input>
 </ion-content>
+
+<ion-footer>
+    <ion-navbar>
+        <ion-grid>
+            <ion-row>
+                 <ion-col><button ion-button block (click)="gohome()">RETURN TO DEMO SELECTION</button></ion-col>
+            </ion-row>
+        </ion-grid>
+    </ion-navbar>
+</ion-footer>

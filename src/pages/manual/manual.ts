@@ -1,16 +1,16 @@
 import { Component, ViewChild } from '@angular/core';
-import { ActionSheetController, AlertController, LoadingController } from 'ionic-angular';
+import { ActionSheetController, AlertController, LoadingController, NavController  } from 'ionic-angular';
 import { ConfigService } from '../../providers/config.service';
+import { Ingenico } from '../../providers/ingenico';
 import {
     Amount,
     CashSaleTransactionRequest,
     CreditSaleTransactionRequest,
     DebitSaleTransactionRequest,
     Device,
-    DeviceType,
-    IngenicoProvider,
-    Product
-} from '../../../plugins/cordova-plugin-ionic-ingenico/core/providers';
+    DeviceType
+} from '../../providers/ingenico/models';
+import { HomePage } from '../pages';
 
 
 @Component({
@@ -49,17 +49,18 @@ export class ManualPage {
         public alertCtrl: AlertController,
         public actionSheetCtrl: ActionSheetController,
         public configService: ConfigService,
-        public ingenico: IngenicoProvider,
-        public loadingCtrl: LoadingController
+        public ingenico: Ingenico,
+        public loadingCtrl: LoadingController,
+        public navCtrl: NavController
     ){
         this.debug     = this.configService.getDebug();
         this.logStyle  = this.configService.getLogStyles().pages;
-        if (this.debug) {console.log(`%cmanual.constructor()`,this.logStyle);}
+        if (this.debug) {console.log(`%cManual.constructor()`,this.logStyle);}
         this.updateValues();
     }
 
     login(){
-        if (this.debug) {console.log(`%cmanual.login()`,this.logStyle);}
+        if (this.debug) {console.log(`%cManual.login()`,this.logStyle);}
         if (!this.loggedIn){
             let ingenicoConfig = this.configService.getIngenicoConfig();
             // create and present loading notification
@@ -69,7 +70,7 @@ export class ManualPage {
             loading.present();
             this.ingenico.login(ingenicoConfig.username, ingenicoConfig.password, ingenicoConfig.apiKey, ingenicoConfig.baseUrl, ingenicoConfig.clientVersion)
                 .then(result => {
-                    if (this.debug) {console.log(`%cmanual.login()->ingenico.login()`,this.logStyle,result);}
+                    if (this.debug) {console.log(`%cManual.login()->ingenico.login()`,this.logStyle,result);}
                     loading.dismiss();
                     this.loggedIn = true;
                     this.setDeviceTypeAndSearch();
@@ -85,18 +86,14 @@ export class ManualPage {
     }
 
     processCharge(type) {
-        if (this.debug) {console.log(`%cmanual.processCharge(${type})`,this.logStyle);}
-        let quantity   = parseInt(this.quantity),
-            product    = this.productInventory[this.productID],
-            amount     = new Amount(this.currency, this.total*100, this.subtotal*100, this.tax*100, this.discount*100, "", 0),
-            products   = new Array<Product>(
-                new Product(product.name,product.price, product.name, "", quantity)
-            );
+        if (this.debug) {console.log(`%cManual.processCharge(${type})`,this.logStyle);}
+        let amount = new Amount(this.currency, this.total*100, this.subtotal*100, this.tax*100, this.discount*100, "", 0),
+            notes  = `This is a transaction note from Manual.processCharge(${type})`;
 
         this.processingCharge = true;
 
         if (type === 'cash') {
-            this.request = new CashSaleTransactionRequest(amount, products, "", "", null);
+            this.request = new CashSaleTransactionRequest(amount, null, notes);
             this.ingenico.processCashTransaction(this.request)
                 .then(result => {
                     if (this.debug) {console.log(`%c\tCashPurchaseResponse`,this.logStyle,result);}
@@ -109,7 +106,7 @@ export class ManualPage {
                 });
         }
         else if (type === 'credit') {
-            this.request = new CreditSaleTransactionRequest(amount, products, "", "", null);
+            this.request = new CreditSaleTransactionRequest(amount, null, notes);
             this.ingenico.processCreditSaleTransactionWithCardReader(this.request)
                 .then(result => {
                     if (this.debug) {console.log(`%c\tCreditCardPurchaseResponse`,this.logStyle,result);}
@@ -122,7 +119,7 @@ export class ManualPage {
                 });
         }
         else {
-            this.request = new DebitSaleTransactionRequest(amount, products, "", "", null);
+            this.request = new DebitSaleTransactionRequest(amount, null, notes);
             this.ingenico.processDebitSaleTransactionWithCardReader(this.request)
                 .then(result => {
                     if (this.debug) {console.log(`%c\tDebitPurchaseResponse`,this.logStyle,result);}
@@ -137,7 +134,7 @@ export class ManualPage {
     }
 
     updateValues() {
-        if (this.debug) {console.log(`%cmanual.updateValues()`,this.logStyle);}
+        if (this.debug) {console.log(`%cManual.updateValues()`,this.logStyle);}
 
         let quantity = parseInt(this.quantity),
             product  = this.productInventory[this.productID];
@@ -148,7 +145,7 @@ export class ManualPage {
     }
 
     alert(message){
-        if (this.debug) {console.log(`%cmanual.alert`,this.logStyle,message);}
+        if (this.debug) {console.log(`%cManual.alert(${message})`,this.logStyle);}
         // show alert
         this.alertCtrl.create({
             message: message,
@@ -156,12 +153,17 @@ export class ManualPage {
         }).present();
     }
 
+    gohome(){
+        if (this.debug) {console.log(`%cManual.gohome()`,this.logStyle);}
+        this.isDeviceConnected(true);
+    }
+
     /* ==========================================================================
     DEVICE MANAGEMENT
     ========================================================================== */
 
     setDeviceTypeAndSearch(){
-        if (this.debug) {console.log(`%cmanual.setDeviceTypeAndSearch()`,this.logStyle);}
+        if (this.debug) {console.log(`%cManual.setDeviceTypeAndSearch()`,this.logStyle);}
         // create and present loading notification
         let loading = this.loadingCtrl.create({
             content : 'Looking for devices ...'
@@ -169,10 +171,10 @@ export class ManualPage {
         loading.present();
         this.ingenico.setDeviceType(DeviceType.RP750x)
             .then(result => {
-                if (this.debug) {console.log(`%cmanual.setDeviceTypeAndSearch()->ingenico.setDeviceType() = ${result}`,this.logStyle);}
+                if (this.debug) {console.log(`%cManual.setDeviceTypeAndSearch()->ingenico.setDeviceType() = ${result}`,this.logStyle);}
                 this.ingenico.searchForDevice()
                     .then(result => {
-                        if (this.debug) {console.log(`%cmanual.setDeviceTypeAndSearch()->ingenico.searchForDevice()`,this.logStyle,result);}
+                        if (this.debug) {console.log(`%cManual.setDeviceTypeAndSearch()->ingenico.searchForDevice()`,this.logStyle,result);}
                         loading.dismiss();
                         this.devices = result;
                         this.showAvailableDevices();
@@ -188,7 +190,7 @@ export class ManualPage {
     }
 
     showAvailableDevices(){
-        if (this.debug) {console.log(`%cmanual.showAvailableDevices()`,this.logStyle);}
+        if (this.debug) {console.log(`%cManual.showAvailableDevices()`,this.logStyle);}
 
         let buttons = [],
             device,
@@ -218,7 +220,7 @@ export class ManualPage {
     }
 
     selectDevice(device: Device){
-        if (this.debug) {console.log(`%cmanual.selectDevice()`,this.logStyle);}
+        if (this.debug) {console.log(`%cManual.selectDevice()`,this.logStyle);}
         // create and present loading notification
         let loading = this.loadingCtrl.create({
             content: 'Configuring device ...'
@@ -227,10 +229,10 @@ export class ManualPage {
         this.ingenico.selectDevice(device)
             .then(result => {
                 if (result){
-                    if (this.debug) {console.log(`%cmanual.selectDevice()->ingenico.selectDevice() = ${result}`,this.logStyle);}
+                    if (this.debug) {console.log(`%cManual.selectDevice()->ingenico.selectDevice() = ${result}`,this.logStyle);}
                     this.ingenico.setupDevice()
                         .then(result => {
-                            if (this.debug) {console.log(`%cmanual.selectDevice()->ingenico.setupDevice() = ${result}`,this.logStyle);}
+                            if (this.debug) {console.log(`%cManual.selectDevice()->ingenico.setupDevice() = ${result}`,this.logStyle);}
                             loading.dismiss();
                             if (result){
                                 this.deviceConnected = true;
@@ -256,11 +258,13 @@ export class ManualPage {
             });
     }
 
-    disconnectDevice(){
-        if (this.debug) {console.log(`%cmanual.disconnectDevice()`,this.logStyle);}
+    disconnectDevice(goHome:boolean = false){
+        if (this.debug) {console.log(`%cManual.disconnectDevice()`,this.logStyle);}
         this.ingenico.disconnect()
             .then(result => {
-                if (this.debug) {console.log(`%cmanual.disconnectDevice()->ingenico.disconnect() = ${result}`,this.logStyle);}
+                if (this.debug) {console.log(`%cManual.disconnectDevice()->ingenico.disconnect() = ${result}`,this.logStyle);}
+                if (goHome)
+                    this.navCtrl.setRoot(HomePage);
             })
             .catch(error => {
                 this.alert(`ERROR : ${error}`);
@@ -268,11 +272,11 @@ export class ManualPage {
     }
 
     onDeviceDisconnect(){
-        if (this.debug) {console.log(`%cmanual.onDeviceDisconnect()`,this.logStyle);}
+        if (this.debug) {console.log(`%cManual.onDeviceDisconnect()`,this.logStyle);}
         // fires off when device disconnects
         this.ingenico.onDeviceDisconnected()
             .then(result => {
-                if (this.debug) {console.log(`%cmanual.onDeviceDisconnect()->ingenico.onDeviceDisconnected() = ${result}`,this.logStyle);}
+                if (this.debug) {console.log(`%cManual.onDeviceDisconnect()->ingenico.onDeviceDisconnected() = ${result}`,this.logStyle);}
                 this.deviceConnected = false;
             })
             .catch(error => {
@@ -280,11 +284,15 @@ export class ManualPage {
             });
     }
 
-    isDeviceConnected(){
-        if (this.debug) {console.log(`%cmanual.isDeviceConnected()`,this.logStyle);}
+    isDeviceConnected(goHome:boolean = false){
+        if (this.debug) {console.log(`%cManual.isDeviceConnected()`,this.logStyle);}
         this.ingenico.isDeviceConnected()
             .then(result=> {
-                if (this.debug) {console.log(`%cmanual.isDeviceConnected()->ingenico.isDeviceConnected() = ${result}`,this.logStyle);}
+                if (this.debug) {console.log(`%cManual.isDeviceConnected()->ingenico.isDeviceConnected() = ${result}`,this.logStyle);}
+                if (result && goHome)
+                    this.disconnectDevice(goHome);
+                else if (goHome)
+                    this.navCtrl.setRoot(HomePage);
             })
             .catch(error => {
                 this.alert(`ERROR : ${error}`);

@@ -1,16 +1,17 @@
 import { Component } from '@angular/core';
-import { AlertController, LoadingController } from 'ionic-angular';
+import { AlertController, LoadingController, NavController } from 'ionic-angular';
 import { ConfigService } from '../../providers/config.service';
+import { Ingenico } from '../../providers/ingenico';
 import {
     Amount,
     CreditSaleTransactionRequest,
-    DebitSaleTransactionRequest,
-    IngenicoProvider
-} from '../../../plugins/cordova-plugin-ionic-ingenico/core/providers';
+    DebitSaleTransactionRequest
+} from '../../providers/ingenico/models';
+import { HomePage } from '../pages';
 
 @Component({
-    selector    : 'terminal-page',
-    templateUrl : 'terminal.html'
+    selector    : 'Terminal-page',
+    templateUrl : 'Terminal.html'
 })
 
 export class TerminalPage {
@@ -26,16 +27,17 @@ export class TerminalPage {
     constructor(
         public alertCtrl: AlertController,
         public configService: ConfigService,
-        public ingenico: IngenicoProvider,
-        public loadingCtrl: LoadingController
+        public ingenico: Ingenico,
+        public loadingCtrl: LoadingController,
+        public navCtrl: NavController
     ){
         this.debug     = this.configService.getDebug();
         this.logStyle  = this.configService.getLogStyles().pages;
-        if (this.debug) {console.log(`%cterminal.constructor()`,this.logStyle);}
+        if (this.debug) {console.log(`%cTerminal.constructor()`,this.logStyle);}
     }
 
     login(){
-        if (this.debug) {console.log(`%cterminal.login()`,this.logStyle);}
+        if (this.debug) {console.log(`%cTerminal.login()`,this.logStyle);}
         // do login
         if (!this.loggedIn){
             let ingenicoConfig = this.configService.getIngenicoConfig();
@@ -46,7 +48,7 @@ export class TerminalPage {
             loading.present();
             this.ingenico.login(ingenicoConfig.username, ingenicoConfig.password, ingenicoConfig.apiKey, ingenicoConfig.baseUrl, ingenicoConfig.clientVersion)
                 .then(result => {
-                    if (this.debug) {console.log(`%cterminal.login()->ingenico.login()`,this.logStyle,result);}
+                    if (this.debug) {console.log(`%cTerminal.login()->ingenico.login()`,this.logStyle,result);}
                     loading.dismiss();
                     this.loggedIn = true;
                     this.connectDevice();
@@ -61,14 +63,15 @@ export class TerminalPage {
     }
 
     processCharge(type){
-        if (this.debug) {console.log(`%cterminal.processCharge(${type})`,this.logStyle);}
+        if (this.debug) {console.log(`%cTerminal.processCharge(${type})`,this.logStyle);}
 
-        let amount = new Amount(this.currency, this.total*100, 0, 0, 0, "DFA-CARE-ORDER", 0);
+        let amount = new Amount(this.currency, this.total*100, 0, 0, 0, "", 0),
+            notes  = `This is a transaction note from Terminal.processCharge(${type})`;
 
         this.processingCharge = true;
 
         if (type === 'credit'){
-            this.ingenico.processCreditSaleTransactionWithCardReader( new CreditSaleTransactionRequest(amount, null, null, null, null) )
+            this.ingenico.processCreditSaleTransactionWithCardReader( new CreditSaleTransactionRequest(amount, null, notes) )
                 .then(result => {
                     if (this.debug) {console.log(`%c\tCreditCardPurchaseResponse`,this.logStyle);}
                     this.finalizeCharge(result);
@@ -80,7 +83,7 @@ export class TerminalPage {
                 });
         }
         else{
-            this.ingenico.processDebitSaleTransactionWithCardReader( new DebitSaleTransactionRequest(amount, null, null, null, null) )
+            this.ingenico.processDebitSaleTransactionWithCardReader( new DebitSaleTransactionRequest(amount, null, notes) )
                 .then(result => {
                     if (this.debug) {console.log(`%c\tDebitPurchaseResponse`,this.logStyle);}
                     this.finalizeCharge(result);
@@ -94,7 +97,7 @@ export class TerminalPage {
     }
 
     finalizeCharge(result){
-        if (this.debug) {console.log(`%cterminal.finalizeCharge`,this.logStyle,result);}
+        if (this.debug) {console.log(`%cTerminal.finalizeCharge`,this.logStyle,result);}
         this.processingCharge = false;
         if (result.clerkDisplay === 'APPROVED'){
             this.alert("TRANSACTION COMPLETED");
@@ -106,7 +109,7 @@ export class TerminalPage {
     }
 
     alert(message){
-        if (this.debug) {console.log(`%cterminal.alert`,this.logStyle,message);}
+        if (this.debug) {console.log(`%cTerminal.alert(${message})`,this.logStyle);}
         // show alert
         this.alertCtrl.create({
             message: message,
@@ -114,12 +117,17 @@ export class TerminalPage {
         }).present();
     }
 
+    gohome(){
+        if (this.debug) {console.log(`%cTerminal.gohome()`,this.logStyle);}
+        this.isDeviceConnected(true);
+    }
+
     /* ==========================================================================
     DEVICE MANAGEMENT
     ========================================================================== */
 
     connectDevice(){
-        if (this.debug) {console.log(`%cterminal.connectDevice()`,this.logStyle);}
+        if (this.debug) {console.log(`%cTerminal.connectDevice()`,this.logStyle);}
         // create and present loading notification
         let loading = this.loadingCtrl.create({
             content     : "Searching for and Connecting device",
@@ -130,7 +138,7 @@ export class TerminalPage {
         // do connect
         this.ingenico.connect()
             .then(result => {
-                if (this.debug) {console.log(`%cterminal.connectDevice()->ingenico.connect() = ${result}`,this.logStyle);}
+                if (this.debug) {console.log(`%cTerminal.connectDevice()->ingenico.connect() = ${result}`,this.logStyle);}
                 loading.dismiss();
                 this.deviceConnected = true;
                 this.onDeviceDisconnect();
@@ -140,11 +148,13 @@ export class TerminalPage {
             });
     }
 
-    disconnectDevice(){
-        if (this.debug) {console.log(`%cterminal.disconnectDevice()`,this.logStyle);}
+    disconnectDevice(goHome:boolean = false){
+        if (this.debug) {console.log(`%cTerminal.disconnectDevice()`,this.logStyle);}
         this.ingenico.disconnect()
             .then(result => {
-                if (this.debug) {console.log(`%cterminal.disconnectDevice()->ingenico.disconnect() = ${result}`,this.logStyle);}
+                if (this.debug) {console.log(`%cTerminal.disconnectDevice()->ingenico.disconnect() = ${result}`,this.logStyle);}
+                if (goHome)
+                    this.navCtrl.setRoot(HomePage);
             })
             .catch(error => {
                 this.alert(`ERROR : ${error}`);
@@ -152,11 +162,11 @@ export class TerminalPage {
     }
 
     onDeviceDisconnect(){
-        if (this.debug) {console.log(`%cterminal.onDeviceDisconnect()`,this.logStyle);}
+        if (this.debug) {console.log(`%cTerminal.onDeviceDisconnect()`,this.logStyle);}
         // fires off when device disconnects
         this.ingenico.onDeviceDisconnected()
             .then(result => {
-                if (this.debug) {console.log(`%cterminal.onDeviceDisconnect()->onDeviceDisconnected()`,this.logStyle);}
+                if (this.debug) {console.log(`%cTerminal.onDeviceDisconnect()->onDeviceDisconnected()`,this.logStyle);}
                     this.deviceConnected = false;
             })
             .catch(error => {
@@ -164,11 +174,15 @@ export class TerminalPage {
             });
     }
 
-    isDeviceConnected(){
-        if (this.debug) {console.log(`%cterminal.isDeviceConnected()`,this.logStyle);}
+    isDeviceConnected(goHome:boolean = false){
+        if (this.debug) {console.log(`%cTerminal.isDeviceConnected()`,this.logStyle);}
         this.ingenico.isDeviceConnected()
             .then(result=> {
-                if (this.debug) {console.log(`%cterminal.isDeviceConnected()->ingenico.isDeviceConnected() = ${result}`,this.logStyle);}
+                if (this.debug) {console.log(`%cTerminal.isDeviceConnected()->ingenico.isDeviceConnected() = ${result}`,this.logStyle);}
+                if (result && goHome)
+                    this.disconnectDevice(goHome);
+                else if (goHome)
+                    this.navCtrl.setRoot(HomePage);
             })
             .catch(error => {
                 this.alert(`ERROR : ${error}`);

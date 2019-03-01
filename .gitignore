@@ -37,3 +37,5 @@ cordova-build.json
 .DS_Store
 Thumbs.db
 UserInterfaceState.xcuserstate
+plugins_src
+src/providers/ingenico

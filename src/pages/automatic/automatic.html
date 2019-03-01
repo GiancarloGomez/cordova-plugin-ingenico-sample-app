@@ -1,15 +1,20 @@
 <ion-header>
     <ion-toolbar>
-        <ion-title>MANUAL DEMO</ion-title>
+        <ion-title>AUTOMATIC DEMO</ion-title>
     </ion-toolbar>
+    <ion-navbar>
+        <ion-grid>
+            <ion-row>
+                <ion-col col-6><button ion-button block color="secondary" (click)="login()" [disabled]="deviceConnected">CONNECT DEVICE</button></ion-col>
+                <ion-col col-6><button ion-button block color="secondary" (click)="disconnectDevice()" [disabled]="!deviceConnected">DISCONNECT DEVICE</button></ion-col>
+            </ion-row>
+        </ion-grid>
+    </ion-navbar>
 </ion-header>
 
 <ion-content>
-    <div *ngIf="!deviceConnected" id="welcome">
-        <button ion-button large (click)="login()">LOOKUP DEVICES</button>
-    </div>
 
-    <form id="orderForm" name="orderForm" #orderForm="ngForm" *ngIf="deviceConnected">
+    <form id="orderForm" name="orderForm" #orderForm="ngForm">
 
         <ion-item>
             <ion-label stacked>PRODUCT</ion-label>
@@ -45,13 +50,9 @@
 
         <ion-grid>
             <ion-row>
-                <ion-col><button ion-button block (click)="processCharge('cash')" [disabled]="processingCharge">PROCESS CASH</button></ion-col>
-                <ion-col><button ion-button block (click)="processCharge('credit')" [disabled]="processingCharge">PROCESS CREDIT</button></ion-col>
-                <ion-col><button ion-button block (click)="processCharge('debit')" [disabled]="processingCharge">PROCESS DEBIT</button></ion-col>
-            </ion-row>
-            <ion-row>
-                <ion-col><button ion-button block color="secondary" (click)="isDeviceConnected()" [disabled]="processingCharge">CHECK CONNECTION</button></ion-col>
-                <ion-col><button ion-button block color="secondary" (click)="disconnectDevice()" [disabled]="processingCharge">DISCONNECT DEVICE</button></ion-col>
+                <ion-col><button ion-button block (click)="processCharge('credit')" [disabled]="!deviceConnected || processingCharge">PROCESS CREDIT</button></ion-col>
+                <ion-col><button ion-button block (click)="processCharge('debit')" [disabled]="!deviceConnected || processingCharge">PROCESS DEBIT</button></ion-col>
+                <ion-col><button ion-button block (click)="uploadSignature()" [disabled]="!deviceConnected || processingCharge">UPLOAD SIGNATURE</button></ion-col>
             </ion-row>
         </ion-grid>
     </form>

@@ -1,8 +1,20 @@
 terminal-page {
-    .large-input input {
-        font-size: 180px;
-        text-align: center !important;
-        color:#222;
-        border-bottom:.55px solid #eee;
+    .scroll-content{
+        justify-content: center;
+        align-content: center;
+        display: flex;
+    }
+    .large-input {
+        display: flex;
+        flex-direction: column;
+        input {
+            flex:0;
+            font-size: 200px;
+            padding:0;
+            line-height: 1;
+            text-align: center !important;
+            color:#222;
+            margin:auto;
+        }
     }
 }

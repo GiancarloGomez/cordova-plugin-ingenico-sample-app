@@ -4,13 +4,14 @@ import { IonicApp, IonicErrorHandler, IonicModule } from 'ionic-angular';
 import { SplashScreen } from '@ionic-native/splash-screen';
 import { StatusBar } from '@ionic-native/status-bar';
 import { MyApp } from './app.component';
-import { HomePage,ManualPage,TerminalPage } from '../pages/pages';
+import { AutomaticPage, HomePage, ManualPage, TerminalPage } from '../pages/pages';
 import { ConfigService } from '../providers/config.service';
-import { IngenicoProvider } from '../../plugins/cordova-plugin-ionic-ingenico/core/providers';
+import { Ingenico } from '../providers/ingenico';
 
 @NgModule({
   declarations: [
     MyApp,
+    AutomaticPage,
     HomePage,
     TerminalPage,
     ManualPage
@@ -22,13 +23,14 @@ import { IngenicoProvider } from '../../plugins/cordova-plugin-ionic-ingenico/co
   bootstrap: [IonicApp],
   entryComponents: [
     MyApp,
+    AutomaticPage,
     HomePage,
     TerminalPage,
     ManualPage
   ],
   providers: [
     ConfigService,
-    IngenicoProvider,
+    Ingenico,
     SplashScreen,
     StatusBar,
     {provide: ErrorHandler, useClass: IonicErrorHandler}
