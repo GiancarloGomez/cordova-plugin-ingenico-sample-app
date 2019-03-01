@@ -1,15 +1,43 @@
-# Ingenico Test App
+# Ingenico Sample Application
+This application contains 3 sample demos.
 
-This application contains 3 sample views
-* __HomePage__<br />
-This page shows the Debit and Credit Transaction options utilizing the auto connect feature
-* __ManualPage__<br />
-This page shows the Debit, Cash and Credit Transaction options utilizing the Device selection feature
-* __TerminalPage__<br />
-This page shows the Debit and Credit Transaction options with a simple interface utilizing the auto connect feature
+### Automatic Connection Demo
+This demo uses the automatic connection feature. Once you hit connect the plugin will search for an available device and connect.
 
-The page to show is configured within ``app.component.ts``
+__Features__
+* Credit Card Transaction
+* Debit Card Transaction
+* Upload Signature
 
-```javascript
-rootPage : any = HomePage;
+### Manual Connection Demo
+This demo uses the device search feature which will allow you to select an available device to connect to.
+
+__Features__
+* Cash Transaction
+* Credit Card Transaction
+* Debit Card Transaction
+
+### Simple Terminal Demo
+This demo uses the automatic connection feature and the interface is  a simple terminal like the Cash App.
+
+__Features__
+* Credit Card Transaction
+* Debit Card Transaction
+
+## Environment File
+Create the following JavaScript environment file :<br />
 ```
+src/assets/javascript/config/environment.js
+```
+
+Enter your Ingenico API Credentials as follows :
+```
+appSettings.ingenico.username  = "my-username";
+appSettings.ingenico.password  = "my-password";
+appSettings.ingenico.apiKey    = "my-api-key";
+```
+
+
+## Debugging via Safari Web Developer Tools 
+Connect your device to your Mac via Safari's Web Developer Tools and use the
+console to view log output as this will give you a lot of information.

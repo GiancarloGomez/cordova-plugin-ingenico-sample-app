@@ -12,15 +12,18 @@ export class HomePage {
 
     logStyle         : string ;
     debug            : boolean;
+    ingenicoConfig   : any;
 
     constructor(
         public alertCtrl: AlertController,
         public configService: ConfigService,
         public navCtrl: NavController
     ){
-        this.debug     = this.configService.getDebug();
-        this.logStyle  = this.configService.getLogStyles().pages;
+        this.debug          = this.configService.getDebug();
+        this.logStyle       = this.configService.getLogStyles().pages;
+        this.ingenicoConfig = this.configService.getIngenicoConfig();
         if (this.debug) {console.log(`%cHome.constructor()`,this.logStyle);}
+
     }
 
     automatic() {

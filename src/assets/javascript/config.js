@@ -7,15 +7,15 @@
 * value.
 */
 var appSettings = {
-	// Controls output of console logs when debugging
-    debug   	: false,
-    // ingenico settings
-    ingenico 	: {
-    	username 		: "logicstudiotest1",
-    	password 		: "logicstudio",
-    	apiKey 			: "CAT6-64a80ac1-0ff3-4d32-ac92-5558a6870a88",
-    	baseUrl 		: "https://uatmcm.roamdata.com/",
-    	clientVersion 	: "0.1"
+    // Controls output of console logs when debugging
+    debug       : true,
+    // ingenico settings ( setup your settings in environment.js)
+    ingenico    : {
+        username        : "",
+        password        : "",
+        apiKey          : "",
+        baseUrl         : "https://uatmcm.roamdata.com/",
+        clientVersion   : "0.1"
     },
     // global debug styles
     styles : {

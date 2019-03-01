@@ -1,52 +1,80 @@
 home-page {
 
-	section {
-		display: flex;
-		flex-direction: row;
-		justify-content: space-between;
-		align-content: center;
-		height: calc(100vh - 186px);
+    section{
+        display: flex;
+        height: calc(100vh - 186px);
+        align-content: center;
+    }
 
-		h2 {
-			text-align: center;
-			padding:0 0 10px;
-			border-bottom: 1px solid #ddd;
-			font-size:1.25em;
-			text-transform:uppercase;
-		}
+    section.instructions {
+        justify-content: center;
+        flex-direction: column;
+        padding: 80px;
+        line-height: 1.42;
 
-		div {
-			background-color:#eee;
-			padding:20px;
-			width:calc(33.33% - 10px);
-			flex-direction: column;
-			display: flex;
+        font-family: Menlo;
 
-			button {
-				margin-top: auto !important;
-			}
-		}
-	}
+        code {
+            font-family: inherit;
+            color: blue;
+        }
 
-	ion-footer p {
-		text-align:center;
-		padding:10px 80px;
-		font-weight: bold;
-	}
+        pre {
+            font-family: inherit;
+            padding:1em;
+            background-color: #efefef;
+            border-radius:.5em;
+            color: #222;
+        }
 
-	@media (orientation:portrait) {
-		section {
-			flex-direction: column;
+        li + li {
+            margin-top: 10px;
+        }
+    }
 
-			div {
-				width:100%;
-				height: 100%;
-				margin-bottom: 10px;
+    section.demos {
+        justify-content: space-between;
 
-				&:last-child {
-					margin-bottom: 0;
-				}
-			}
-		}
-	}
+        h2 {
+            text-align: center;
+            padding:0 0 10px;
+            border-bottom: 1px solid #ddd;
+            font-size:1.25em;
+            text-transform:uppercase;
+        }
+
+        & > div {
+            background-color:#eee;
+            padding:20px;
+            width:calc(33.33% - 10px);
+            flex-direction: column;
+            display: flex;
+
+            button {
+                margin-top: auto !important;
+            }
+        }
+    }
+
+    ion-footer p {
+        text-align:center;
+        padding:10px 80px;
+        font-weight: bold;
+    }
+
+    @media (orientation:portrait) {
+        section.demos {
+            flex-direction: column;
+
+            div {
+                width:100%;
+                height: 100%;
+                margin-bottom: 10px;
+
+                &:last-child {
+                    margin-bottom: 0;
+                }
+            }
+        }
+    }
 }
