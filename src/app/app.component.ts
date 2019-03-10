@@ -3,7 +3,7 @@ import { NavController, Platform } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 import { HomePage } from '../pages/pages';
-import { ConfigService } from '../providers/config.service';
+import { ConfigService } from '../providers/services';
 
 @Component({
     templateUrl: 'app.html'

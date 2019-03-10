@@ -22,9 +22,9 @@ appSettings.ingenico.apiKey    = "my-api-key";</pre>
             <p>
                 This demo uses the automatic connection feature. Once you hit connect the
                 plugin will search for an available device and connect.
-                <br /><br />
+                <br />
                 <strong>Features</strong><br />
-                Credit Card Transaction &bull; Debit Card Transaction &bull; Upload Signature
+                Credit Card Transaction &bull; Debit Card Transaction
             </p>
             <button ion-button block (click)="automatic()">OPEN DEMO</button>
         </div>
@@ -34,7 +34,7 @@ appSettings.ingenico.apiKey    = "my-api-key";</pre>
             <p>
                 This demo uses the device search feature which will allow you to select an
                 available device to connect to.
-                <br /><br />
+                <br />
                 <strong>Features</strong><br />
                 Cash Transaction &bull; Credit Card Transaction &bull; Debit Card Transaction
             </p>
@@ -46,11 +46,19 @@ appSettings.ingenico.apiKey    = "my-api-key";</pre>
             <p>
                 This demo uses the automatic connection feature and the interface is
                 a simple terminal like the Cash App.
-                <br /><br />
+                <br />
                 <strong>Features</strong><br />
                 Credit Card Transaction &bull; Debit Card Transaction
             </p>
             <button ion-button block (click)="terminal()">OPEN DEMO</button>
+        </div>
+
+        <div>
+            <h2>Tests</h2>
+            <p>
+                This is a simple test page with buttons for various actions
+            </p>
+            <button ion-button block (click)="test()">OPEN DEMO</button>
         </div>
     </section>
 </ion-content>

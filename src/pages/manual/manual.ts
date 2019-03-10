@@ -230,22 +230,7 @@ export class ManualPage {
             .then(result => {
                 if (result){
                     if (this.debug) {console.log(`%cManual.selectDevice()->ingenico.selectDevice() = ${result}`,this.logStyle);}
-                    this.ingenico.setupDevice()
-                        .then(result => {
-                            if (this.debug) {console.log(`%cManual.selectDevice()->ingenico.setupDevice() = ${result}`,this.logStyle);}
-                            loading.dismiss();
-                            if (result){
-                                this.deviceConnected = true;
-                                this.onDeviceDisconnect();
-                            }
-                            else {
-                                this.alert("Device could not be configured");
-                            }
-                        })
-                        .catch(error => {
-                            loading.dismiss();
-                            this.alert(`ERROR : ${error}`);
-                        });
+                    loading.dismiss();
                 }
                 else {
                     loading.dismiss();
@@ -265,19 +250,6 @@ export class ManualPage {
                 if (this.debug) {console.log(`%cManual.disconnectDevice()->ingenico.disconnect() = ${result}`,this.logStyle);}
                 if (goHome)
                     this.navCtrl.setRoot(HomePage);
-            })
-            .catch(error => {
-                this.alert(`ERROR : ${error}`);
-            });
-    }
-
-    onDeviceDisconnect(){
-        if (this.debug) {console.log(`%cManual.onDeviceDisconnect()`,this.logStyle);}
-        // fires off when device disconnects
-        this.ingenico.onDeviceDisconnected()
-            .then(result => {
-                if (this.debug) {console.log(`%cManual.onDeviceDisconnect()->ingenico.onDeviceDisconnected() = ${result}`,this.logStyle);}
-                this.deviceConnected = false;
             })
             .catch(error => {
                 this.alert(`ERROR : ${error}`);

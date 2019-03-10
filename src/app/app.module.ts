@@ -4,8 +4,8 @@ import { IonicApp, IonicErrorHandler, IonicModule } from 'ionic-angular';
 import { SplashScreen } from '@ionic-native/splash-screen';
 import { StatusBar } from '@ionic-native/status-bar';
 import { MyApp } from './app.component';
-import { AutomaticPage, HomePage, ManualPage, TerminalPage } from '../pages/pages';
-import { ConfigService } from '../providers/config.service';
+import { AutomaticPage, HomePage, ManualPage, TerminalPage, TestPage } from '../pages/pages';
+import { ConfigService, LoadingAndErrorHandling } from '../providers/services';
 import { Ingenico } from '../providers/ingenico';
 
 @NgModule({
@@ -13,8 +13,9 @@ import { Ingenico } from '../providers/ingenico';
     MyApp,
     AutomaticPage,
     HomePage,
+    ManualPage,
     TerminalPage,
-    ManualPage
+    TestPage
   ],
   imports: [
     BrowserModule,
@@ -25,12 +26,14 @@ import { Ingenico } from '../providers/ingenico';
     MyApp,
     AutomaticPage,
     HomePage,
+    ManualPage,
     TerminalPage,
-    ManualPage
+    TestPage
   ],
   providers: [
     ConfigService,
     Ingenico,
+    LoadingAndErrorHandling,
     SplashScreen,
     StatusBar,
     {provide: ErrorHandler, useClass: IonicErrorHandler}

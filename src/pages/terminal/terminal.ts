@@ -141,7 +141,6 @@ export class TerminalPage {
                 if (this.debug) {console.log(`%cTerminal.connectDevice()->ingenico.connect() = ${result}`,this.logStyle);}
                 loading.dismiss();
                 this.deviceConnected = true;
-                this.onDeviceDisconnect();
             })
             .catch(error => {
                 loading.dismiss();
@@ -155,19 +154,6 @@ export class TerminalPage {
                 if (this.debug) {console.log(`%cTerminal.disconnectDevice()->ingenico.disconnect() = ${result}`,this.logStyle);}
                 if (goHome)
                     this.navCtrl.setRoot(HomePage);
-            })
-            .catch(error => {
-                this.alert(`ERROR : ${error}`);
-            });
-    }
-
-    onDeviceDisconnect(){
-        if (this.debug) {console.log(`%cTerminal.onDeviceDisconnect()`,this.logStyle);}
-        // fires off when device disconnects
-        this.ingenico.onDeviceDisconnected()
-            .then(result => {
-                if (this.debug) {console.log(`%cTerminal.onDeviceDisconnect()->onDeviceDisconnected()`,this.logStyle);}
-                    this.deviceConnected = false;
             })
             .catch(error => {
                 this.alert(`ERROR : ${error}`);

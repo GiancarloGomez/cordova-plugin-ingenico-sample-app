@@ -1,0 +1,59 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-title>TESTS DEMO</ion-title>
+    </ion-toolbar>
+</ion-header>
+<ion-content padding>
+    <ion-grid>
+        <ion-row>
+            <ion-col><h1>Authentication<small>{{connectionInfo}}</small></h1></ion-col>
+        </ion-row>
+        <ion-row>
+            <ion-col><button ion-button block (click)="login()">LOGIN</button></ion-col>
+            <ion-col><button ion-button block (click)="logoff()">LOGOFF</button></ion-col>
+            <ion-col><button ion-button block (click)="isLoggedIn()">ISLOGGED IN</button></ion-col>
+            <ion-col><button ion-button block (click)="refreshUserSession()">REFRESH</button></ion-col>
+        </ion-row>
+        <ion-row>
+            <ion-col><h1>Device Connection</h1></ion-col>
+        </ion-row>
+        <ion-row>
+            <ion-col><button ion-button block (click)="connect()">AUTO CONNECT</button></ion-col>
+            <ion-col><button ion-button block (click)="searchForDevice()">SEARCH</button></ion-col>
+            <ion-col><button ion-button block (click)="disconnect()">DISCONNECT</button></ion-col>
+        </ion-row>
+        <ion-row>
+            <ion-col><h1>Device Info Functions</h1></ion-col>
+        </ion-row>
+        <ion-row>
+            <ion-col><button ion-button block (click)="getBatteryLevel()">BATTERY LEVEL</button></ion-col>
+            <ion-col><button ion-button block (click)="isDeviceConnected()">IS CONNECTED</button></ion-col>
+        </ion-row>
+        <ion-row>
+            <ion-col><h1>Device Type Functions</h1></ion-col>
+        </ion-row>
+        <ion-row>
+            <ion-col><button ion-button block (click)="setDeviceType()">SET DEVICE TYPE</button></ion-col>
+            <ion-col><button ion-button block (click)="setBadDeviceType()">SET BAD DEVICE TYPE</button></ion-col>
+            <ion-col><button ion-button block (click)="getDeviceType()">GET DEVICE TYPE</button></ion-col>
+        </ion-row>
+        <ion-row>
+            <ion-col><h1>Transactions</h1></ion-col>
+        </ion-row>
+        <ion-row>
+            <ion-col><button ion-button block (click)="cash()">CASH</button></ion-col>
+            <ion-col><button ion-button block (click)="credit()">CREDIT</button></ion-col>
+            <ion-col><button ion-button block (click)="debit()">DEBIT</button></ion-col>
+        </ion-row>
+    </ion-grid>
+</ion-content>
+
+<ion-footer>
+    <ion-navbar>
+        <ion-grid>
+            <ion-row>
+                 <ion-col><button ion-button block (click)="gohome()">RETURN TO DEMO SELECTION</button></ion-col>
+            </ion-row>
+        </ion-grid>
+    </ion-navbar>
+</ion-footer>

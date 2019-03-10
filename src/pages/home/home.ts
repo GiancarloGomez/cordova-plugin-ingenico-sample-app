@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { AlertController, NavController } from 'ionic-angular';
 import { ConfigService } from '../../providers/config.service';
-import { AutomaticPage, ManualPage, TerminalPage } from '../pages';
+import { AutomaticPage, ManualPage, TerminalPage, TestPage } from '../pages';
+import { Ingenico } from '../../providers/ingenico';
 
 @Component({
     selector    : 'home-page',
@@ -17,13 +18,13 @@ export class HomePage {
     constructor(
         public alertCtrl: AlertController,
         public configService: ConfigService,
+        public ingenico: Ingenico,
         public navCtrl: NavController
     ){
         this.debug          = this.configService.getDebug();
         this.logStyle       = this.configService.getLogStyles().pages;
         this.ingenicoConfig = this.configService.getIngenicoConfig();
         if (this.debug) {console.log(`%cHome.constructor()`,this.logStyle);}
-
     }
 
     automatic() {
@@ -39,5 +40,10 @@ export class HomePage {
     terminal() {
         if (this.debug) {console.log(`%cMyApp.terminal()`,this.logStyle);}
         this.navCtrl.setRoot(TerminalPage);
+    }
+
+    test() {
+        if (this.debug) {console.log(`%cMyApp.test()`,this.logStyle);}
+        this.navCtrl.setRoot(TestPage);
     }
 }

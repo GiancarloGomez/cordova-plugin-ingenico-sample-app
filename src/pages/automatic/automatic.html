@@ -52,7 +52,6 @@
             <ion-row>
                 <ion-col><button ion-button block (click)="processCharge('credit')" [disabled]="!deviceConnected || processingCharge">PROCESS CREDIT</button></ion-col>
                 <ion-col><button ion-button block (click)="processCharge('debit')" [disabled]="!deviceConnected || processingCharge">PROCESS DEBIT</button></ion-col>
-                <ion-col><button ion-button block (click)="uploadSignature()" [disabled]="!deviceConnected || processingCharge">UPLOAD SIGNATURE</button></ion-col>
             </ion-row>
         </ion-grid>
     </form>

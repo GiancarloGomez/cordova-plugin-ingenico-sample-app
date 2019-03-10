@@ -30,12 +30,12 @@ plugins/ios.json
 www/
 $RECYCLE.BIN/
 
-# Settings
-src/assets/javascript/environment.js
-cordova-build.json
-
 .DS_Store
 Thumbs.db
-UserInterfaceState.xcuserstate
+
+# Project Specific
+cordova-build.json
 plugins_src
 src/providers/ingenico
+src/assets/javascript/environment.js
+typings/cordova-typings.d.ts

@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
-import { AlertController, LoadingController, NavController } from 'ionic-angular';
+import { AlertController, LoadingController, NavController, ToastController } from 'ionic-angular';
 import { ConfigService } from '../../providers/config.service';
 import { Ingenico } from '../../providers/ingenico';
 import {
@@ -32,6 +32,7 @@ export class AutomaticPage {
     productName      : string    = "";
     taxValue         : any       = 0.07;
     deviceConnected  : boolean   = false;
+    deviceSearch     : boolean   = false;
     processingCharge : boolean   = false;
     loggedIn         : boolean   = false;
     productInventory : Array<any> = [
@@ -45,7 +46,8 @@ export class AutomaticPage {
         public configService: ConfigService,
         public ingenico: Ingenico,
         public loadingCtrl: LoadingController,
-        public navCtrl: NavController
+        public navCtrl: NavController,
+        public toastCtrl: ToastController
     ){
         this.debug     = this.configService.getDebug();
         this.logStyle  = this.configService.getLogStyles().pages;
@@ -114,27 +116,6 @@ export class AutomaticPage {
         }
     }
 
-    uploadSignature() {
-        if (this.debug) {console.log(`%cAutomatic.uploadSignature()`,this.logStyle);}
-        this.ingenico.getReferenceForTransactionWithPendingSignature()
-            .then(result => {
-                if (result){
-                    this.ingenico.uploadSignature(result, "SG9sYSBtdW5kbw==")
-                        .then(result => {
-                            this.alert(result);
-                        }).catch(error => {
-                            this.alert(error);
-                        });
-                }
-                else {
-                    this.alert("No transaction with pending signature.");
-                }
-            })
-            .catch(error => {
-                this.alert("No transaction with pending signature.");
-            });
-    }
-
     updateValues() {
         if (this.debug) {console.log(`%cAutomatic.updateValues()`,this.logStyle);}
 
@@ -167,22 +148,55 @@ export class AutomaticPage {
     connectDevice(){
         if (this.debug) {console.log(`%cAutomatic.connectDevice()`,this.logStyle);}
         // create and present loading notification
-        let loading = this.loadingCtrl.create({
-            content : 'Searching for and Connecting device...'
+        let loading = this.alertCtrl.create({
+            title   : 'Device Search',
+            message : 'Searching for device to connect to',
+            buttons: [
+              {
+                text: 'CANCEL SEARCH',
+                role: 'cancel',
+                handler: () => {
+                    this.ingenico.stopSearchForDevice()
+                        .then(result => {
+                            if (this.debug) {console.log(`%cAutomatic.connectDevice()->ingenico.stopSearchForDevice() = ${result}`,this.logStyle);}
+                            // set device search off
+                            this.deviceSearch = false;
+                        })
+                        .catch(error => {
+                            this.alert(`ERROR : ingenico.stopSearchForDevice() -> ${error}`);
+                        });
+                }
+              }
+            ]
         });
         loading.present();
+        // set search on
+        this.deviceSearch = true;
         // do connect
         this.ingenico.connect()
             .then(result => {
                 if (this.debug) {console.log(`%cAutomatic.connectDevice()->ingenico.connect() = ${result}`,this.logStyle);}
+                this.deviceSearch    = false;
                 loading.dismiss();
-                this.deviceConnected = true;
-                // why do we run this here?
-                this.onDeviceDisconnect();
+                if (result) {
+                    this.deviceConnected = true;
+                } else {
+                    this.toastCtrl.create({
+                        message: 'No devices where discovered',
+                        duration: 3000,
+                        position: 'middle',
+                        cssClass: 'danger',
+                        showCloseButton : true
+                      }).present();
+                }
             })
             .catch(error => {
-                loading.dismiss();
-                this.alert(`ERROR : ${error}`);
+                console.log(this.deviceConnected,this.deviceSearch);
+                if (this.deviceSearch){
+                    loading.dismiss();
+                    this.alert(`ERROR : this.ingenico.connect() -> ${error}`);
+                    this.deviceSearch = false;
+                }
             });
     }
 
@@ -196,19 +210,6 @@ export class AutomaticPage {
             })
             .catch(error => {
                 this.alert(`ERROR : ${error}`);
-            });
-    }
-
-    onDeviceDisconnect(){
-        if (this.debug) {console.log(`%cAutomatic.onDeviceDisconnect()`,this.logStyle);}
-        // fires off when device disconnects
-        this.ingenico.onDeviceDisconnected()
-            .then(result => {
-                if (this.debug) {console.log(`%cAutomatic.onDeviceDisconnect()->ingenico.onDeviceDisconnected() = ${result}`,this.logStyle);}
-                this.deviceConnected = false;
-            })
-            .catch(error => {
-                console.log(`ERROR : ${error}`);
             });
     }
 
