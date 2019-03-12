@@ -1,0 +1,19 @@
+<ion-header [class]="className">
+    <ion-toolbar>
+        <ion-title>INGENICO SAMPLE APPLICATION SETUP REQUIREMENTS</ion-title>
+    </ion-toolbar>
+</ion-header>
+<ion-content padding>
+    <section [class]="className">
+        <div>
+            <p>It appears you do not have your credentials set properly.</p>
+            <ol>
+                <li>Create the following file JavaScript file<br /><code>src/assets/javascript/config/environment.js</code></li>
+                <li>Enter your Ingenico API Credentials as displayed below and rebuild the application.</li>
+            </ol>
+        <pre>appSettings.ingenico.username  = "my-username";
+appSettings.ingenico.password  = "my-password";
+appSettings.ingenico.apiKey    = "my-api-key";</pre>
+        </div>
+    </section>
+</ion-content>

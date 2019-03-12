@@ -2,7 +2,7 @@ import { Component, ViewChild } from '@angular/core';
 import { NavController, Platform } from 'ionic-angular';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
-import { HomePage } from '../pages/pages';
+import { InstructionsPage } from '../pages/pages';
 import { ConfigService } from '../providers/services';
 
 @Component({
@@ -13,9 +13,9 @@ export class MyApp {
 
    @ViewChild('myNav') nav: NavController;
 
-    rootPage            : any = HomePage;
-    logStyle            : string ;
-    debug               : boolean;
+    rootPage : any = InstructionsPage;
+    logStyle : string ;
+    debug    : boolean;
 
     constructor(
         platform: Platform,

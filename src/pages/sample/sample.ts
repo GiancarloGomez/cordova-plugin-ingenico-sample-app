@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { ActionSheetController, AlertController, NavController } from 'ionic-angular';
+import { ActionSheetController, AlertController, ModalController } from 'ionic-angular';
 import { ConfigService, LoadingAndErrorHandling } from '../../providers/services';
 import { Ingenico } from '../../providers/ingenico';
 import {
@@ -12,21 +12,30 @@ import {
     ResponseCode,
     UserProfile
 } from '../../providers/ingenico/models';
-import { HomePage } from '../pages';
+import { ChargeFormPage } from '../pages';
+
 import * as moment from 'moment';
 
 @Component({
-    selector    : 'test-page',
-    templateUrl : 'test.html'
+    selector    : 'sample-page',
+    templateUrl : 'sample.html'
 })
 
-export class TestPage {
+export class SamplePage {
 
     logStyle         : string ;
+    logEventStyle    : string ;
     debug            : boolean;
     connectionInfo   : string;
-
+    currency         : string;
     devices          : Device[];
+    ingenicoConfig   : any;
+    chargeModal      : any;
+
+    // used for UI updates but actual statuses should always be checked against SDK
+    initialized      : boolean = false;
+    authenticated    : boolean = false;
+    deviceReady      : boolean = false;
 
     // for undefined properties ( used in listener creation in ionViewWillEnter )
     [x: string]: any;
@@ -37,11 +46,13 @@ export class TestPage {
         public configService: ConfigService,
         public ingenico: Ingenico,
         public loadingAndErrorHandling: LoadingAndErrorHandling,
-        public navCtrl: NavController
+        private modalCtrl: ModalController
     ){
-        this.debug     = this.configService.getDebug();
-        this.logStyle  = this.configService.getLogStyles().pages;
+        this.debug          = this.configService.getDebug();
+        this.logStyle       = this.configService.getLogStyles().pages;
+        this.logEventStyle  = this.configService.getLogStyles().events;
         if (this.debug) {console.log(`%cTest.constructor()`,this.logStyle);}
+        this.ingenicoConfig = this.configService.getIngenicoConfig();
     }
 
     ionViewWillEnter(){
@@ -62,7 +73,7 @@ export class TestPage {
         document.addEventListener('Ingenico:device:ready',this.onDeviceReadyBound,false);
         document.addEventListener('Ingenico:device:disconnected',this.onDeviceDisconnectedBound,false);
         document.addEventListener('Ingenico:device:error',this.onDeviceErrorBound,false);
-        this.isLoggedIn();
+        this.isInitialized(true);
     }
 
     ionViewWillLeave(){
@@ -78,58 +89,72 @@ export class TestPage {
     // Device Connection Listeners
 
     onDeviceSelected(event:any){
-        if (this.debug) {console.log(`%cTest.onDeviceSelected()`,this.logStyle,event); }
+        if (this.debug) {console.log(`%cTest.onDeviceSelected()`,this.logEventStyle,event); }
         this.loadingAndErrorHandling.showLoading('DEVICE SELECTED','hide',true);
     }
 
     onDeviceConnected(){
-        if (this.debug) {console.log(`%cTest.onDeviceConnected()`,this.logStyle); }
+        if (this.debug) {console.log(`%cTest.onDeviceConnected()`,this.logEventStyle); }
         this.loadingAndErrorHandling.showLoading('CONFIGURING DEVICE','hide',true);
     }
 
     onDeviceReady(){
-        if (this.debug) {console.log(`%cTest.onDeviceReady()`,this.logStyle); }
+        if (this.debug) {console.log(`%cTest.onDeviceReady()`,this.logEventStyle); }
         this.loadingAndErrorHandling.showLoading('DEVICE READY FOR USE','hide',true,true);
+        this.deviceReady = true;
         setTimeout(() => {
             this.loadingAndErrorHandling.hideLoading();
         }, 1000);
     }
 
     onDeviceDisconnected(){
-        if (this.debug) {console.log(`%cTest.onDeviceDisconnected()`,this.logStyle); }
+        if (this.debug) {console.log(`%cTest.onDeviceDisconnected()`,this.logEventStyle); }
         this.loadingAndErrorHandling.showAlert('DEVICE DISCONNECTED');
-        this.isLoggedIn();
+        this.deviceReady = false;
+        this.isInitialized(true);
     }
 
     onDeviceError(event){
-        if (this.debug) {console.log(`%cTest.onDeviceError()`,this.logStyle,event.detail); }
-        this.loadingAndErrorHandling.showAlert(`DEVICE CONNECTION ERROR<br />${event.detail}`);
+        if (this.debug) {console.log(`%cTest.onDeviceError()`,this.logEventStyle,event.detail); }
+        this.loadingAndErrorHandling.showError(this.getErrorForResponseCode(event.detail), '', 'DEVICE ERROR');
     }
 
-    getErrorForResponseCode(error){
-        let errorCode = parseInt(error);
-        if ( !isNaN(errorCode) ){
-            for (let code in ResponseCode){
-                if (ResponseCode[code] === errorCode){
-                    error = code;
-                    break;
-                }
-            }
-            if (errorCode === error)
-                error = 'Unknown Error';
-        }
+    getErrorForResponseCode(error) {
+        if (this.debug) { console.log(`%cTest.getErrorForResponseCode()`,this.logStyle,error); }
+        let errorCode = 0;
+        // responses from onDeviceError comeback as error:code
+        if (error.toString().indexOf(':') !== -1)
+            errorCode = parseInt(error.split(':')[1]);
+        else
+            errorCode = parseInt(error);
+        if ( !isNaN(errorCode) )
+            error = ResponseCode.getDescriptionForResponse(ResponseCode.getResponseByNumber(errorCode));
         return error;
     }
 
     // Authentication
 
+    initialize() {
+        if (this.debug) { console.log(`%cTest.initialize()`, this.logStyle); }
+
+        this.ingenico.initialize(this.ingenicoConfig.apiKey, this.ingenicoConfig.baseUrl, this.ingenicoConfig.clientVersion)
+            .then(result => {
+                this.initialized = result;
+                this.updateConnectionInfo('LOGIN REQUIRED');
+            })
+            .catch(error => {
+                if (this.debug) { console.error(`%cTest.initialize() : this.ingenico.initialize : Error : ${error}`, this.logStyle); }
+                this.updateConnectionInfo();
+                this.loadingAndErrorHandling.showError(this.getErrorForResponseCode(error), '', 'INITIALIZATION ERROR');
+            });
+    }
+
     login(){
         if (this.debug) {console.log(`%cTest.login()`,this.logStyle);}
-        let ingenicoConfig = this.configService.getIngenicoConfig();
 
         this.loadingAndErrorHandling.showLoading('Processing ...');
 
-        this.ingenico.login(ingenicoConfig.username, ingenicoConfig.password, ingenicoConfig.apiKey, ingenicoConfig.baseUrl, ingenicoConfig.clientVersion)
+        this.ingenico.login(this.ingenicoConfig.username, this.ingenicoConfig.password)
             .then(result => {
                 let userProfile:UserProfile = result;
                 if (this.debug) {
@@ -137,10 +162,13 @@ export class TestPage {
                     console.log(`%cTest.login() : this.ingenico.login() : expires on ${sessionExpires}`,this.logStyle,userProfile);
                     this.updateConnectionInfo(`AUTHENTICATED : SESSION EXPIRES : ${sessionExpires}`);
                 }
+                this.authenticated = true;
+                this.currency = userProfile.configuration.currency.code;
                 this.loadingAndErrorHandling.hideLoading();
             })
             .catch(error => {
                 if (this.debug) {console.error(`%cTest.login() : this.ingenico.login : Error : ${error}`,this.logStyle);}
+                this.authenticated = false;
                 this.updateConnectionInfo();
                 this.loadingAndErrorHandling.showError( this.getErrorForResponseCode(error),'','LOGIN ERROR');
             });
@@ -151,10 +179,12 @@ export class TestPage {
         this.ingenico.logoff()
             .then(result => {
                 if (this.debug) {console.log(`%cTest.logoff() : this.ingenico.logoff() : ${result}`,this.logStyle);}
+                this.authenticated = false;
                 this.updateConnectionInfo();
             })
             .catch(error => {
                 if (this.debug) {console.error(`%cTest.logoff() : this.ingenico.logoff : Error : ${error}`,this.logStyle);}
+                this.authenticated = false;
                 this.updateConnectionInfo();
                 this.loadingAndErrorHandling.showError( this.getErrorForResponseCode(error),'','LOG OFF ERROR');
             });
@@ -170,21 +200,46 @@ export class TestPage {
                     let sessionExpires = moment(userProfile.session.expiresTime,'YYYYMMDDHHmmss').add(moment().utcOffset(),'m').format('MM/DD/YYYY hh:mm a');
                     if (this.debug) { console.log(`%c\tSession expires on ${sessionExpires}`,this.logStyle); }
                     this.updateConnectionInfo(`AUTHENTICATED : SESSION EXPIRES : ${sessionExpires}`);
+                    this.authenticated = true;
+                    this.currency = userProfile.configuration.currency.code;
+                } else {
+                    this.authenticated = false;
                 }
             })
             .catch(error => {
-                if (this.debug) {console.error(`%cTest.refreshUserSession() : this.ingenico.refreshUserSession : Error : ${error}`,this.logStyle);}
+                if (this.debug) {console.error(`%cTest.refreshUserSession() : this.ingenico.refreshUserSession : Error : ${error}`, this.logStyle);}
+                this.authenticated = false;
                 this.updateConnectionInfo();
                 this.loadingAndErrorHandling.showError( this.getErrorForResponseCode(error),'','REFRESH SESSION ERROR');
             });
     }
 
-    isLoggedIn(){
+    isInitialized(checkLogin:boolean = false) {
+        if (this.debug) { console.log(`%cTest.isInitialized()`, this.logStyle); }
+        this.ingenico.isInitialized()
+            .then(result => {
+                if (this.debug) { console.log(`%cTest.isInitialized() : this.ingenico.isInitialized(${result})`, this.logStyle); }
+                this.initialized = result;
+                this.updateConnectionInfo();
+                if (this.initialized && checkLogin)
+                    this.isLoggedIn(false);
+            })
+            .catch(error => {
+                if (this.debug) { console.error(`%cTest.isInitialized() : this.ingenico.isInitialized : Error : ${error}`, this.logStyle); }
+                this.updateConnectionInfo();
+                this.loadingAndErrorHandling.showError(this.getErrorForResponseCode(error), '', 'IS INITIALIZED ERROR');
+            });
+    }
+
+    isLoggedIn(showAlert:boolean = true){
         if (this.debug) {console.log(`%cTest.isLoggedIn()`,this.logStyle);}
         this.ingenico.isLoggedIn()
             .then(result => {
                 if (this.debug) { console.log(`%cTest.isLoggedIn() : this.ingenico.isLoggedIn(${result})`,this.logStyle); }
-                if (result)
+                this.authenticated = result;
+                if (showAlert)
+                    this.loadingAndErrorHandling.showAlert(this.authenticated ? 'YES' : 'NO', '', 'IS LOGGED IN?');
+                if (this.authenticated)
                     this.refreshUserSession();
                 else
                     this.updateConnectionInfo();
@@ -197,7 +252,7 @@ export class TestPage {
     }
 
     updateConnectionInfo(value:string = ''){
-        this.connectionInfo = (value === '') ? 'LOGIN REQUIRED' : value;
+        this.connectionInfo = (value === '') ? (this.initialized ? 'LOGIN REQUIRED' : 'INITIALIZATION REQUIRED') : value;
     }
 
     // Device Information
@@ -220,20 +275,24 @@ export class TestPage {
         this.ingenico.getDeviceType()
             .then(result => {
                 if (this.debug) {console.log(`%cTest.getDeviceType() : this.ingenico.getDeviceType()`,this.logStyle,result);}
-                let pos = 0;
-                let device = '';
-                for (let type in DeviceType){
-                    if(result === pos){
-                        device = DeviceType[type];
-                        break;
-                    }
-                    pos++;
-                }
-                this.loadingAndErrorHandling.showAlert(device,'','DEVICE TYPE');
+                this.loadingAndErrorHandling.showAlert(DeviceType.getTypeByPosition(result),'','DEVICE TYPE');
             })
             .catch(error => {
                 if (this.debug) {console.error(`%cTest.getDeviceType() : this.ingenico.getDeviceType : Error : ${error}`,this.logStyle);}
-                this.loadingAndErrorHandling.showError(error,'','DEVICE TYPE ERROR');
+                this.loadingAndErrorHandling.showError(this.getErrorForResponseCode(error),'','DEVICE TYPE ERROR');
+            });
+    }
+
+    getDeviceSerialNumber() {
+        if (this.debug) { console.log(`%cTest.getDeviceSerialNumber()`, this.logStyle); }
+        this.ingenico.getDeviceSerialNumber()
+            .then(result => {
+                if (this.debug) { console.log(`%cTest.getDeviceSerialNumber() : this.ingenico.getDeviceSerialNumber()`, this.logStyle, result); }
+                this.loadingAndErrorHandling.showAlert(result, '', 'DEVICE SERIAL NUMBER');
+            })
+            .catch(error => {
+                if (this.debug) { console.error(`%cTest.getDeviceSerialNumber() : this.ingenico.getDeviceSerialNumber : Error : ${error}`, this.logStyle); }
+                this.loadingAndErrorHandling.showError(this.getErrorForResponseCode(error), '', 'DEVICE SERIAL NUMBER ERROR');
             });
     }
 
@@ -275,6 +334,10 @@ export class TestPage {
         this.ingenico.disconnect()
             .then(result => {
                 if (this.debug) {console.log(`%cTest.disconnect() : this.ingenico.disconnect() : ${result}`,this.logStyle);}
+                // reset on manual disconnect - checked on callback if registered
+                // callback may not fire if device was already selected before paged view
+                if (result)
+                    this.initialized = this.authenticated = false;
             })
             .catch(error => {
                 if (this.debug) {console.error(`%cTest.disconnect() : this.ingenico.disconnect : Error : ${error}`,this.logStyle);}
@@ -287,6 +350,7 @@ export class TestPage {
         this.ingenico.isDeviceConnected()
             .then(result => {
                 if (this.debug) {console.log(`%cTest.isDeviceConnected() : this.ingenico.isDeviceConnected()`,this.logStyle,result);}
+                this.deviceReady = result;
                 this.loadingAndErrorHandling.showAlert(result ? 'YES' : 'NO','','DEVICE CONNECTED');
             })
             .catch(error => {
@@ -319,7 +383,7 @@ export class TestPage {
         this.ingenico.setDeviceType(DeviceType.RP750x)
             .then(result => {
                 if (this.debug) {console.log(`%cTest.setDeviceType():ingenico.setDeviceType() = ${result}`,this.logStyle);}
-                this.loadingAndErrorHandling.showAlert(result ? 'YES' : 'NO','','DEVICE TYPE SET');
+                this.loadingAndErrorHandling.showAlert(result ? 'DEVICE TYPE SET' : 'DEVICE TYPE NOT SET','','DEVICE TYPE SET');
             })
             .catch(error => {
                 this.loadingAndErrorHandling.showError( this.getErrorForResponseCode(error),'','SET DEVICE TYPE ERROR');
@@ -331,7 +395,7 @@ export class TestPage {
         this.ingenico.setDeviceType(DeviceType.RP45BT)
             .then(result => {
                 if (this.debug) {console.log(`%cTest.setBadDeviceType():ingenico.setDeviceType() = ${result}`,this.logStyle);}
-                this.loadingAndErrorHandling.showAlert(result ? 'YES' : 'NO','','DEVICE TYPE SET');
+                this.loadingAndErrorHandling.showAlert(result ? 'DEVICE TYPE SET' : 'DEVICE TYPE NOT SET','','DEVICE TYPE SET');
             })
             .catch(error => {
                 this.loadingAndErrorHandling.showError( this.getErrorForResponseCode(error),'','SET BAD DEVICE TYPE ERROR');
@@ -434,40 +498,32 @@ export class TestPage {
 
     transactionPrompt(transactionType:string){
         if (this.debug) {console.log(`%cTest.transactionPrompt(${transactionType})`,this.logStyle);}
-        let alert = this.alertCtrl.create({
-            title: `${transactionType} Transaction`.toUpperCase(),
-            inputs: [
-                {
-                    name: 'amount',
-                    placeholder: 'Enter Amount',
-                    type:'tel'
-                }
-            ],
-            buttons: [
-                {
-                    text: 'Cancel',
-                    role: 'cancel'
-                },
-                {
-                    text: `Charge`,
-                    handler: data => {
-                        let amount = parseInt(data.amount);
-                        if(!isNaN(amount) && amount > 0){
-                            this.doTransaction(transactionType,amount);
-                        }
-                    }
-                }
-            ]
-          });
-          alert.present();
+        let data    = {
+                transactionType : transactionType,
+                doTransaction   : this.doTransaction.bind(this)
+            },
+            options = {
+                enableBackdropDismiss: false
+            };
+        this.chargeModal = this.modalCtrl.create(ChargeFormPage, data, options);
+        this.chargeModal.present();
+
     }
 
-    doTransaction(transactionType:string,_amount:number){
-        if (this.debug) {console.log(`%cTest.doTransaction(${transactionType},${_amount})`,this.logStyle);}
-        let amount  = new Amount('USD', _amount*100, _amount*100, 0, 0, "", 0),
+    doTransaction(transactionType: string, total: number, subTotal: number, tax: number, discount: number, discountDescription: string, tip: number, surcharge: number){
+        if (this.debug) {console.log(`%cTest.doTransaction()`,this.logStyle,arguments);}
+        let amount = new Amount(total, subTotal, tax, discount, discountDescription, tip, this.currency, surcharge),
             notes   = `This is a transaction note from Test.doTransaction(${transactionType})`,
             groupID = "",
             request;
+
+        // hide modal
+        this.chargeModal.dismiss();
+
+        if (transactionType === 'cash')
+            this.loadingAndErrorHandling.showLoading(`Processing ${transactionType} transaction ...`.toUpperCase());
+        else
+            this.loadingAndErrorHandling.showLoading(`Finalize ${transactionType} transaction on device`.toUpperCase(),'hide');
 
         if (transactionType === 'cash') {
             request = new CashSaleTransactionRequest(amount, groupID, notes);
@@ -479,6 +535,8 @@ export class TestPage {
                 .catch(error => {
                     if (error !== ResponseCode.TransactionCancelled)
                         this.loadingAndErrorHandling.showError( this.getErrorForResponseCode(error),'','CASH TRANSACTION ERROR');
+                    else
+                        this.loadingAndErrorHandling.hideLoading();
                 });
         }
         else if (transactionType === 'credit') {
@@ -490,7 +548,9 @@ export class TestPage {
                 })
                 .catch(error => {
                     if (error !== ResponseCode.TransactionCancelled)
-                        this.loadingAndErrorHandling.showError( this.getErrorForResponseCode(error),'','CREDIT TRANSACTION ERROR');
+                        this.loadingAndErrorHandling.showError(this.getErrorForResponseCode(error), '', 'CREDIT TRANSACTION ERROR');
+                    else
+                        this.loadingAndErrorHandling.hideLoading();
                 });
         }
         else {
@@ -502,15 +562,10 @@ export class TestPage {
                 })
                 .catch(error => {
                     if (error !== ResponseCode.TransactionCancelled)
-                        this.loadingAndErrorHandling.showError( this.getErrorForResponseCode(error),'','DEBIT TRANSACTION ERROR');
+                        this.loadingAndErrorHandling.showError(this.getErrorForResponseCode(error), '', 'DEBIT TRANSACTION ERROR');
+                    else
+                        this.loadingAndErrorHandling.hideLoading();
                 });
         }
-    }
-
-    // NAVIGATION
-
-    gohome(){
-        if (this.debug) {console.log(`%cTest.gohome()`,this.logStyle);}
-        this.navCtrl.setRoot(HomePage);
     }
 }

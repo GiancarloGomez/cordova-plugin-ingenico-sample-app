@@ -1,0 +1,58 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-title>INGENICO SAMPLE APPLICATION</ion-title>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content padding>
+    <ion-grid>
+        <ion-row>
+            <ion-col><h1>Authentication<small>{{connectionInfo}}</small></h1></ion-col>
+        </ion-row>
+        <ion-row>
+            <ion-col><button ion-button block (click)="initialize()" [disabled]="initialized">INITIALIZE</button></ion-col>
+            <ion-col><button ion-button block (click)="login()" [disabled]="!initialized || authenticated">LOGIN</button></ion-col>
+            <ion-col><button ion-button block (click)="logoff()" [disabled]="!authenticated">LOGOFF</button></ion-col>
+            <ion-col><button ion-button block (click)="isLoggedIn()" [disabled]="!initialized">IS LOGGED IN</button></ion-col>
+            <ion-col><button ion-button block (click)="refreshUserSession()" [disabled]="!authenticated">REFRESH</button></ion-col>
+        </ion-row>
+        <ion-row>
+            <ion-col><h1>Device Connection</h1></ion-col>
+        </ion-row>
+        <ion-row>
+            <ion-col><button ion-button block (click)="connect()" [disabled]="!authenticated || deviceReady">AUTO CONNECT</button></ion-col>
+            <ion-col><button ion-button block (click)="searchForDevice()" [disabled]="!authenticated || deviceReady">SEARCH</button></ion-col>
+            <ion-col><button ion-button block (click)="disconnect()" [disabled]="!authenticated || !deviceReady">DISCONNECT</button></ion-col>
+        </ion-row>
+        <ion-row>
+            <ion-col><h1>Device Info Functions</h1></ion-col>
+        </ion-row>
+        <ion-row>
+            <ion-col><button ion-button block (click)="getBatteryLevel()" [disabled]="!deviceReady">BATTERY LEVEL</button></ion-col>
+            <ion-col><button ion-button block (click)="isDeviceConnected()" [disabled]="!initialized">IS CONNECTED</button></ion-col>
+            <ion-col><button ion-button block (click)="getDeviceSerialNumber()" [disabled]="!deviceReady">GET SERIAL</button></ion-col>
+        </ion-row>
+        <ion-row>
+            <ion-col><h1>Device Type Functions</h1></ion-col>
+        </ion-row>
+        <ion-row>
+            <ion-col><button ion-button block (click)="setDeviceType()" [disabled]="!initialized">SET TYPE</button></ion-col>
+            <ion-col><button ion-button block (click)="setBadDeviceType()" [disabled]="!initialized">SET BAD TYPE</button></ion-col>
+            <ion-col><button ion-button block (click)="getDeviceType()" [disabled]="!initialized">GET TYPE</button></ion-col>
+        </ion-row>
+        <ion-row>
+            <ion-col><h1>Transactions</h1></ion-col>
+        </ion-row>
+        <ion-row>
+            <ion-col><button ion-button block (click)="cash()" [disabled]="!authenticated">CASH</button></ion-col>
+            <ion-col><button ion-button block (click)="credit()" [disabled]="!deviceReady">CREDIT</button></ion-col>
+            <ion-col><button ion-button block (click)="debit()" [disabled]="!deviceReady">DEBIT</button></ion-col>
+        </ion-row>
+    </ion-grid>
+</ion-content>
+
+<ion-footer>
+    <ion-toolbar>
+        <p>Make sure to connect to your device from your Mac using Safari's Web Developer Tools to view all the console messages.</p>
+    </ion-toolbar>
+</ion-footer>

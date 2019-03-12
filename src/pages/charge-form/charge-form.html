@@ -1,0 +1,54 @@
+<ion-content>
+    <h1>{{transactionType}} Transaction</h1>
+    <p>
+        Enter all values in full currency amount as none of them are auto calculated for you. This is simply for testing
+        all values passed in as an <code>IMSAmount</code> object to the Transaction.
+    </p>
+    <ion-grid>
+        <ion-row>
+            <ion-col>
+                <ion-item>
+                    <ion-label floating>Subtotal Amount</ion-label>
+                    <ion-input type="tel" name="subTotal" [(ngModel)]="amount.subTotal"></ion-input>
+                </ion-item>
+
+                <ion-item>
+                    <ion-label floating>Tax Amount</ion-label>
+                    <ion-input type="tel" name="tax" [(ngModel)]="amount.tax"></ion-input>
+                </ion-item>
+
+                <ion-item>
+                    <ion-label floating>Discount Amount</ion-label>
+                    <ion-input type="tel" name="discount" [(ngModel)]="amount.discount"></ion-input>
+                </ion-item>
+            </ion-col>
+            <ion-col>
+                <ion-item>
+                    <ion-label floating>Tip Amount</ion-label>
+                    <ion-input type="tel" name="tip" [(ngModel)]="amount.tip"></ion-input>
+                </ion-item>
+
+                <ion-item>
+                    <ion-label floating>Surcharge Amount</ion-label>
+                    <ion-input type="tel" name="surcharge" [(ngModel)]="amount.surcharge"></ion-input>
+                </ion-item>
+
+                <ion-item>
+                    <ion-label floating>Total Amount</ion-label>
+                    <ion-input type="tel" name="total" [(ngModel)]="amount.total"></ion-input>
+                </ion-item>
+            </ion-col>
+        </ion-row>
+        <ion-row>
+            <ion-col>
+                <ion-item>
+                    <ion-input type="text" name="discountDescription" placeholder="Discount Description" [(ngModel)]="amount.discountDescription"></ion-input>
+                </ion-item>
+            </ion-col>
+        </ion-row>
+        <ion-row class="with-button">
+            <ion-col><button ion-button large block color="success" (click)="doCharge()">CHARGE</button></ion-col>
+            <ion-col><button ion-button large block color="danger" (click)="dismiss()">CANCEL</button></ion-col>
+        </ion-row>
+    </ion-grid>
+</ion-content>

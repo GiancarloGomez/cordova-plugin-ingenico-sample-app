@@ -1,4 +1,4 @@
-test-page {
+sample-page {
     h1 {
         text-align: left;
         text-transform: uppercase;
@@ -8,6 +8,7 @@ test-page {
         font-size: 16px;
         background-color:#efefef;
         position: relative;
+        color:#222;
 
         small {
             position: absolute;
@@ -16,5 +17,12 @@ test-page {
             transform: translateY(-50%);
             font-weight:bold;
         }
+    }
+
+    ion-footer p {
+        text-align:center;
+        padding:10px 80px;
+        font-weight:500;
+        color:#222;
     }
 }

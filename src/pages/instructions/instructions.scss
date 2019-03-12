@@ -1,0 +1,50 @@
+instructions-page {
+
+    section{
+        display: flex;
+        height: calc(100vh - 186px);
+        align-content: center;
+    }
+
+    .instructions {
+        opacity: 0;
+        transition: opacity .5s;
+
+        &.on {
+            opacity: 1;
+        }
+    }
+
+    section {
+        justify-content: center;
+        flex-direction: column;
+        padding: 80px;
+        line-height: 1.42;
+        opacity: 0;
+
+        font-family: Menlo;
+
+        code {
+            font-family: inherit;
+            color: blue;
+        }
+
+        pre {
+            font-family: inherit;
+            padding:1em;
+            background-color: #efefef;
+            border-radius:.5em;
+            color: #222;
+        }
+
+        li + li {
+            margin-top: 10px;
+        }
+    }
+
+    ion-footer p {
+        text-align:center;
+        padding:10px 80px;
+        font-weight: bold;
+    }
+}
