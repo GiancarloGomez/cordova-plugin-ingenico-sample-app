@@ -36,6 +36,7 @@ export class SamplePage {
     initialized      : boolean = false;
     authenticated    : boolean = false;
     deviceReady      : boolean = false;
+    deviceSetup      : boolean = false;
 
     // for undefined properties ( used in listener creation in ionViewWillEnter )
     [x: string]: any;
@@ -62,15 +63,12 @@ export class SamplePage {
             this.onDeviceSelectedBound = this.onDeviceSelected.bind(this);
         if (!this.onDeviceConnectedBound)
             this.onDeviceConnectedBound = this.onDeviceConnected.bind(this);
-        if (!this.onDeviceReadyBound)
-            this.onDeviceReadyBound = this.onDeviceReady.bind(this);
         if (!this.onDeviceDisconnectedBound)
             this.onDeviceDisconnectedBound = this.onDeviceDisconnected.bind(this);
         if (!this.onDeviceErrorBound)
             this.onDeviceErrorBound = this.onDeviceError.bind(this);
         document.addEventListener('Ingenico:device:selected',this.onDeviceSelectedBound,false);
         document.addEventListener('Ingenico:device:connected',this.onDeviceConnectedBound,false);
-        document.addEventListener('Ingenico:device:ready',this.onDeviceReadyBound,false);
         document.addEventListener('Ingenico:device:disconnected',this.onDeviceDisconnectedBound,false);
         document.addEventListener('Ingenico:device:error',this.onDeviceErrorBound,false);
         this.isInitialized(true);
@@ -81,7 +79,6 @@ export class SamplePage {
         // remove custom event listeners
         document.removeEventListener('Ingenico:device:selected',this.onDeviceSelectedBound,false);
         document.removeEventListener('Ingenico:device:connected',this.onDeviceConnectedBound,false);
-        document.removeEventListener('Ingenico:device:ready',this.onDeviceReadyBound,false);
         document.removeEventListener('Ingenico:device:disconnected',this.onDeviceDisconnectedBound,false);
         document.removeEventListener('Ingenico:device:error',this.onDeviceErrorBound,false);
     }
@@ -95,12 +92,7 @@ export class SamplePage {
 
     onDeviceConnected(){
         if (this.debug) {console.log(`%cTest.onDeviceConnected()`,this.logEventStyle); }
-        this.loadingAndErrorHandling.showLoading('CONFIGURING DEVICE','hide',true);
-    }
-
-    onDeviceReady(){
-        if (this.debug) {console.log(`%cTest.onDeviceReady()`,this.logEventStyle); }
-        this.loadingAndErrorHandling.showLoading('DEVICE READY FOR USE','hide',true,true);
+        this.loadingAndErrorHandling.showLoading('DEVICE CONNECTED', 'hide', true);
         this.deviceReady = true;
         setTimeout(() => {
             this.loadingAndErrorHandling.hideLoading();
@@ -109,8 +101,11 @@ export class SamplePage {
 
     onDeviceDisconnected(){
         if (this.debug) {console.log(`%cTest.onDeviceDisconnected()`,this.logEventStyle); }
-        this.loadingAndErrorHandling.showAlert('DEVICE DISCONNECTED');
-        this.deviceReady = false;
+        this.loadingAndErrorHandling.showLoading('DEVICE DISCONNECTED', 'hide', true);
+        this.deviceReady = this.deviceSetup = false;
+        setTimeout(() => {
+            this.loadingAndErrorHandling.hideLoading();
+        }, 1000);
         this.isInitialized(true);
     }
 
@@ -152,26 +147,55 @@ export class SamplePage {
     login(){
         if (this.debug) {console.log(`%cTest.login()`,this.logStyle);}
 
-        this.loadingAndErrorHandling.showLoading('Processing ...');
-
-        this.ingenico.login(this.ingenicoConfig.username, this.ingenicoConfig.password)
-            .then(result => {
-                let userProfile:UserProfile = result;
-                if (this.debug) {
-                    let sessionExpires = moment(userProfile.session.expiresTime,'YYYYMMDDHHmmss').add(moment().utcOffset(),'m').format('MM/DD/YYYY hh:mm a');
-                    console.log(`%cTest.login() : this.ingenico.login() : expires on ${sessionExpires}`,this.logStyle,userProfile);
-                    this.updateConnectionInfo(`AUTHENTICATED : SESSION EXPIRES : ${sessionExpires}`);
+        let alert = this.alertCtrl.create({
+            title: 'LOGIN',
+            inputs: [
+                {
+                    name: 'username',
+                    placeholder: 'Username',
+                    type: 'text',
+                    value: this.ingenicoConfig.username
+                },
+                {
+                    name: 'password',
+                    placeholder: 'Password',
+                    type: 'password',
+                    value: this.ingenicoConfig.password
                 }
-                this.authenticated = true;
-                this.currency = userProfile.configuration.currency.code;
-                this.loadingAndErrorHandling.hideLoading();
-            })
-            .catch(error => {
-                if (this.debug) {console.error(`%cTest.login() : this.ingenico.login : Error : ${error}`,this.logStyle);}
-                this.authenticated = false;
-                this.updateConnectionInfo();
-                this.loadingAndErrorHandling.showError( this.getErrorForResponseCode(error),'','LOGIN ERROR');
-            });
+            ],
+            buttons: [
+                {
+                    text: 'CANCEL',
+                    role: 'cancel'
+                },
+                {
+                    text: 'LOGIN',
+                    handler: data => {
+                        this.loadingAndErrorHandling.showLoading('Processing ...');
+
+                        this.ingenico.login(data.username, data.password)
+                            .then(result => {
+                                let userProfile: UserProfile = result;
+                                if (this.debug) {
+                                    let sessionExpires = moment(userProfile.session.expiresTime, 'YYYYMMDDHHmmss').add(moment().utcOffset(), 'm').format('MM/DD/YYYY hh:mm a');
+                                    console.log(`%cTest.login() : this.ingenico.login() : expires on ${sessionExpires}`, this.logStyle, userProfile);
+                                    this.updateConnectionInfo(`AUTHENTICATED : SESSION EXPIRES : ${sessionExpires}`);
+                                }
+                                this.authenticated = true;
+                                this.currency = userProfile.configuration.currency.code;
+                                this.loadingAndErrorHandling.hideLoading();
+                            })
+                            .catch(error => {
+                                if (this.debug) { console.error(`%cTest.login() : this.ingenico.login : Error : ${error}`, this.logStyle); }
+                                this.authenticated = false;
+                                this.updateConnectionInfo();
+                                this.loadingAndErrorHandling.showError(this.getErrorForResponseCode(error), '', 'LOGIN ERROR');
+                            });
+                    }
+                }
+            ]
+        });
+        alert.present();
     }
 
     logoff(){
@@ -296,7 +320,7 @@ export class SamplePage {
             });
     }
 
-    // Device Connection
+    // Device Connection and Setup
 
     connect(){
         if (this.debug) {console.log(`%cTest.connect()`,this.logStyle);}
@@ -359,8 +383,6 @@ export class SamplePage {
             });
     }
 
-    // Device Setup
-
     // Invoked by Device selection from showAvailableDevices
     selectDevice(device: Device){
         if (this.debug) {console.log(`%cTest.selectDevice()`,this.logStyle);}
@@ -400,6 +422,56 @@ export class SamplePage {
             .catch(error => {
                 this.loadingAndErrorHandling.showError( this.getErrorForResponseCode(error),'','SET BAD DEVICE TYPE ERROR');
             });
+    }
+
+    setupDevice() {
+        if (this.debug) { console.log(`%cTest.setupDevice()`, this.logStyle); }
+        this.loadingAndErrorHandling.showLoading('SETTING UP DEVICE', 'hide', true);
+        this.ingenico.setupDevice()
+            .then(result => {
+                this.deviceSetup = true;
+                if (this.debug) { console.log(`%cTest.setupDevice():ingenico.setupDevice() = ${result}`, this.logStyle); }
+                this.loadingAndErrorHandling.showAlert(result ? 'SETUP COMPLETE' : 'SETUP FAILED', '', 'DEVICE SETUP');
+            })
+            .catch(error => {
+                this.loadingAndErrorHandling.showError(this.getErrorForResponseCode(error), '', 'DEVICE SETUP ERROR');
+            });
+    }
+
+    configureIdleShutdownTimeout() {
+        if (this.debug) { console.log(`%cTest.configureIdleShutdownTimeout()`, this.logStyle); }
+
+        let alert = this.alertCtrl.create({
+            title: 'Set timeout',
+            message: 'Set timeout between 180-1800 seconds',
+            inputs: [
+                {
+                    name: 'timeout',
+                    placeholder: '180 - 1800',
+                    type:'tel'
+                }
+            ],
+            buttons: [
+                {
+                    text: 'CANCEL',
+                    role: 'cancel'
+                },
+                {
+                    text: 'SAVE',
+                    handler: data => {
+                        this.ingenico.configureIdleShutdownTimeout(data.timeout)
+                            .then(result => {
+                                if (this.debug) { console.log(`%cTest.configureIdleShutdownTimeout():ingenico.configureIdleShutdownTimeout() = ${result}`, this.logStyle); }
+                                this.loadingAndErrorHandling.showAlert(result ? 'COMPLETED' : 'FAILED', '', 'DEVICE TIMEOUT');
+                            })
+                            .catch(error => {
+                                this.loadingAndErrorHandling.showError(this.getErrorForResponseCode(error), '', 'DEVICE SETUP ERROR');
+                            });
+                    }
+                }
+            ]
+        });
+        alert.present();
     }
 
     // Device Search
@@ -457,7 +529,6 @@ export class SamplePage {
     credit(){
         if (this.debug) {console.log(`%cTest.credit()`,this.logStyle);}
         this.transactionPrompt('credit');
-
     }
 
     debit(){
@@ -507,7 +578,6 @@ export class SamplePage {
             };
         this.chargeModal = this.modalCtrl.create(ChargeFormPage, data, options);
         this.chargeModal.present();
-
     }
 
     doTransaction(transactionType: string, total: number, subTotal: number, tax: number, discount: number, discountDescription: string, tip: number, surcharge: number){

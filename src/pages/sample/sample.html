@@ -17,20 +17,22 @@
             <ion-col><button ion-button block (click)="refreshUserSession()" [disabled]="!authenticated">REFRESH</button></ion-col>
         </ion-row>
         <ion-row>
-            <ion-col><h1>Device Connection</h1></ion-col>
+            <ion-col><h1>Device Connection and Setup</h1></ion-col>
         </ion-row>
         <ion-row>
-            <ion-col><button ion-button block (click)="connect()" [disabled]="!authenticated || deviceReady">AUTO CONNECT</button></ion-col>
-            <ion-col><button ion-button block (click)="searchForDevice()" [disabled]="!authenticated || deviceReady">SEARCH</button></ion-col>
-            <ion-col><button ion-button block (click)="disconnect()" [disabled]="!authenticated || !deviceReady">DISCONNECT</button></ion-col>
+            <ion-col><button ion-button block (click)="connect()" [disabled]="!initialized || deviceReady">AUTO CONNECT</button></ion-col>
+            <ion-col><button ion-button block (click)="searchForDevice()" [disabled]="!initialized || deviceReady">SEARCH</button></ion-col>
+            <ion-col><button ion-button block (click)="setupDevice()" [disabled]="!initialized || !deviceReady || !authenticated || deviceSetup">SETUP</button></ion-col>
+            <ion-col><button ion-button block (click)="disconnect()" [disabled]="!initialized || !deviceReady">DISCONNECT</button></ion-col>
         </ion-row>
         <ion-row>
             <ion-col><h1>Device Info Functions</h1></ion-col>
         </ion-row>
         <ion-row>
-            <ion-col><button ion-button block (click)="getBatteryLevel()" [disabled]="!deviceReady">BATTERY LEVEL</button></ion-col>
+            <ion-col><button ion-button block (click)="getBatteryLevel()" [disabled]="!initialized || !deviceReady">BATTERY LEVEL</button></ion-col>
             <ion-col><button ion-button block (click)="isDeviceConnected()" [disabled]="!initialized">IS CONNECTED</button></ion-col>
-            <ion-col><button ion-button block (click)="getDeviceSerialNumber()" [disabled]="!deviceReady">GET SERIAL</button></ion-col>
+            <ion-col><button ion-button block (click)="getDeviceSerialNumber()" [disabled]="!initialized || !deviceReady">GET SERIAL</button></ion-col>
+            <ion-col><button ion-button block (click)="configureIdleShutdownTimeout()" [disabled]="!initialized || !deviceReady">SET IDLE TIMEOUT</button></ion-col>
         </ion-row>
         <ion-row>
             <ion-col><h1>Device Type Functions</h1></ion-col>
@@ -45,8 +47,8 @@
         </ion-row>
         <ion-row>
             <ion-col><button ion-button block (click)="cash()" [disabled]="!authenticated">CASH</button></ion-col>
-            <ion-col><button ion-button block (click)="credit()" [disabled]="!deviceReady">CREDIT</button></ion-col>
-            <ion-col><button ion-button block (click)="debit()" [disabled]="!deviceReady">DEBIT</button></ion-col>
+            <ion-col><button ion-button block (click)="credit()" [disabled]="!deviceSetup">CREDIT</button></ion-col>
+            <ion-col><button ion-button block (click)="debit()" [disabled]="!deviceSetup">DEBIT</button></ion-col>
         </ion-row>
     </ion-grid>
 </ion-content>
